@@ -36,7 +36,8 @@ enum
     ID_SaveAs,
     ID_ChoiceAlgorithms,
     TEXT_CHOICE,
-    BUTTON1
+    BUTTON_NEW,
+    BUTTON_DELETE
 };
 
 wxIMPLEMENT_APP(MyApp);
@@ -61,7 +62,7 @@ MyFrame::MyFrame()
     SetMenuBar(menuBar);
 
 
-    wxString algorithms [SIZEOF_ALGORITHMS] =
+    wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
         _T("SJF"),
@@ -71,9 +72,11 @@ MyFrame::MyFrame()
         _T("Preemptive Priority"),
         _T("Preemptive Priority with RR")
     };
+    new wxStaticText(this, TEXT_CHOICE, _T("스케줄링 알고리즘 선택"), wxPoint(0, 25), wxSize(210, 15), wxALIGN_CENTER);
+    wxChoice* choiceAlgorithms = new wxChoice(this, ID_ChoiceAlgorithms, wxPoint(15, 45), wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
 
-    new wxStaticText(this, TEXT_CHOICE, _T("스케줄링 알고리즘 선택"), wxPoint(20, 15));
-    wxChoice* choiceAlgorithms = new wxChoice(this, ID_ChoiceAlgorithms, wxPoint(15, 35), wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
+    new wxButton(this, BUTTON_NEW, _T("프로세스 생성"), wxPoint(55, 130), wxSize(100, 25));
+    new wxButton(this, BUTTON_DELETE, _T("프로세스 삭제"), wxPoint(55, 170), wxSize(100, 25));
 
 
     Bind(wxEVT_MENU, &MyFrame::OnLoad, this, ID_Load);
