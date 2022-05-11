@@ -2,10 +2,15 @@
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include <wx/wxprec.h>
+#include <wx/choice.h>
+#include <wx/stattext.h>
 
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #endif
+
+constexpr int SIZEOF_ALGORITHMS = 7;
+
 
 class MyApp : public wxApp
 {
@@ -19,14 +24,19 @@ public:
     MyFrame();
 
 private:
-    void OnHello(wxCommandEvent& event);
-    void OnExit(wxCommandEvent& event);
-    void OnAbout(wxCommandEvent& event);
+    void OnLoad(wxCommandEvent& event);
+    void OnSave(wxCommandEvent& event);
+    void OnSaveAs(wxCommandEvent& event);
 };
 
 enum
 {
-    ID_Hello = 1
+    ID_Load = 1,
+    ID_Save,
+    ID_SaveAs,
+    ID_ChoiceAlgorithms,
+    TEXT_CHOICE,
+    BUTTON1
 };
 
 wxIMPLEMENT_APP(MyApp);
@@ -39,43 +49,52 @@ bool MyApp::OnInit()
 }
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, "Hello World")
+    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator"))
 {
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
-        "Help string shown in status bar for this menu item");
-    menuFile->AppendSeparator();
-    menuFile->Append(wxID_EXIT);
-
-    wxMenu* menuHelp = new wxMenu;
-    menuHelp->Append(wxID_ABOUT);
+    menuFile->Append(ID_Load, _T("&열기\tCtrl-O"));
+    menuFile->Append(ID_Save, _T("&저장\tCtrl-S"));
+    menuFile->Append(ID_SaveAs, _T("&다른 이름으로 저장\tCtrl-Shift-S"));
 
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, "&File");
-    menuBar->Append(menuHelp, "&Help");
-
+    menuBar->Append(menuFile, "&파일");
     SetMenuBar(menuBar);
 
-    CreateStatusBar();
-    SetStatusText("Welcome to wxWidgets!");
 
-    Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
-    Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
-    Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
+    wxString algorithms [SIZEOF_ALGORITHMS] =
+    {
+        _T("FCFS"),
+        _T("SJF"),
+        _T("SRTF"),
+        _T("Round Robin"),
+        _T("Non-preemptive Priority"),
+        _T("Preemptive Priority"),
+        _T("Preemptive Priority with RR")
+    };
+
+    new wxStaticText(this, TEXT_CHOICE, _T("스케줄링 알고리즘 선택"), wxPoint(20, 15));
+    wxChoice* choiceAlgorithms = new wxChoice(this, ID_ChoiceAlgorithms, wxPoint(15, 35), wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
+
+
+    Bind(wxEVT_MENU, &MyFrame::OnLoad, this, ID_Load);
+    Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
+    Bind(wxEVT_MENU, &MyFrame::OnSaveAs, this, ID_SaveAs);
 }
 
-void MyFrame::OnExit(wxCommandEvent& event)
+
+
+
+void MyFrame::OnLoad(wxCommandEvent& event)
 {
-    Close(true);
+    wxMessageBox("Load : nop");
 }
 
-void MyFrame::OnAbout(wxCommandEvent& event)
+void MyFrame::OnSave(wxCommandEvent& event)
 {
-    wxMessageBox("This is a wxWidgets Hello World example",
-        "About Hello World", wxOK | wxICON_INFORMATION);
+    wxMessageBox("Save : nop");
 }
 
-void MyFrame::OnHello(wxCommandEvent& event)
+void MyFrame::OnSaveAs(wxCommandEvent& event)
 {
-    wxLogMessage("Hello world from wxWidgets!");
+    wxMessageBox("Save As : nop");
 }

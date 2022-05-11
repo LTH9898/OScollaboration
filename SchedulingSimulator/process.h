@@ -13,15 +13,15 @@ public:
 	Process(const Process& rhs)
 		: pid(rhs.pid), arrivalTime(rhs.arrivalTime), burstTime(rhs.burstTime), priority(rhs.priority) {}
 
-	void setPid(const std::string& pid) { this->pid = pid; }
-	void setArrivalTime(const double arrivalTime) { this->arrivalTime = arrivalTime; }
-	void setBurstTime(const double burstTime) { this->burstTime = burstTime; }
-	void setPriority(const unsigned priority) { this->priority = priority; }
+	void SetPid(const std::string& pid) { this->pid = pid; }
+	void SetArrivalTime(const double arrivalTime) { this->arrivalTime = arrivalTime; }
+	void SetBurstTime(const double burstTime) { this->burstTime = burstTime; }
+	void SetPriority(const unsigned priority) { this->priority = priority; }
 
-	std::string getPid() const { return pid; }
-	double getArrivalTime() const { return arrivalTime; }
-	double getBurstTime() const { return burstTime; }
-	unsigned getPriority() const { return priority; }
+	std::string GetPid() const { return pid; }
+	double GetArrivalTime() const { return arrivalTime; }
+	double GetBurstTime() const { return burstTime; }
+	unsigned GetPriority() const { return priority; }
 
 	Process& operator=(const Process& rhs);
 
@@ -35,25 +35,25 @@ public:
 	const Process operator+(const double time);
 
 private:
-	std::string pid;
-	double arrivalTime;
-	double burstTime;
-	unsigned priority;
+	std::string pid;		// 프로세스 ID
+	double arrivalTime;		// 도착시간
+	double burstTime;		// 서비스시간
+	unsigned priority;		// 우선순위
 };
 
 
-auto CMP_PROCESS = [](const Process& lhs, const Process& rhs) { return lhs.getArrivalTime() > rhs.getArrivalTime(); };
+auto CMP_PROCESS = [](const Process& lhs, const Process& rhs) { return lhs.GetArrivalTime() > rhs.GetArrivalTime(); };
 
 // 도착 시간이 가장 작은 프로세스가 가장 높은 우선순위를 갖는 프로세스 큐
 using ProcessQueue = std::priority_queue<Process, std::vector<Process>, decltype(CMP_PROCESS)>;
 // 프로세스 큐 생성 함수
-ProcessQueue createProcessQueue();
+ProcessQueue CreateProcessQueue();
 // 간트 차트에 프로세스 ID와 그 프로세스의 종료 시점을 기록
 using GanttChart = std::queue<std::pair<std::string, double>>;
 
 
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Process& Process::operator=(const Process& rhs)
 {
 	this->pid = rhs.pid;
@@ -91,7 +91,7 @@ const Process Process::operator+(const double time)
 }
 
 
-ProcessQueue createProcessQueue()
+ProcessQueue CreateProcessQueue()
 {
 	return ProcessQueue(CMP_PROCESS);
 }

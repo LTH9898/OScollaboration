@@ -2,34 +2,37 @@
 #include "process.h"
 #include <vector>
 
-GanttChart FCFS(ProcessQueue q);
-/*GanttChart SJF(ProcessQueue q);
-GanttChart SRTF(ProcessQueue q);
-GanttChart RR(ProcessQueue q, const double timeQuantum);
-GanttChart priority(ProcessQueue q);
-GanttChart preemptivePriority(ProcessQueue q);
-GanttChart priorityRR(ProcessQueue q, const double timeQuantum);*/
+constexpr int NO_TIME_QUANTUM = -1;
+
+
+GanttChart FCFS(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM);
+/*GanttChart SJF(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM);
+GanttChart SRTF(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM);
+GanttChart RR(ProcessQueue pQ, const double timeQuantum);
+GanttChart Priority(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM);
+GanttChart PreemptivePriority(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM);
+GanttChart PriorityRR(ProcessQueue pQ, const double timeQuantum);*/
 
 
 
-
-GanttChart FCFS(ProcessQueue pQ)
+/////////////////////////////////////////////////////////////////////
+GanttChart FCFS(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM)
 {
 	double time = 0.0;
 	GanttChart ganttChart;
 	
 	while (!pQ.empty()) {
 
-		if (time >= pQ.top().getArrivalTime()) {
+		if (time >= pQ.top().GetArrivalTime()) {
 
 			const Process& currentProcess = pQ.top();
-			time += currentProcess.getBurstTime();
-			ganttChart.emplace(currentProcess.getPid(), time);
+			time += currentProcess.GetBurstTime();
+			ganttChart.emplace(currentProcess.GetPid(), time);
 			pQ.pop();
 		}
 		else {
 
-			time = pQ.top().getArrivalTime();
+			time = pQ.top().GetArrivalTime();
 			ganttChart.emplace(std::string(), time);
 		}
 	}
@@ -38,31 +41,31 @@ GanttChart FCFS(ProcessQueue pQ)
 }
 /*
 
-GanttChart SJF(ProcessQueue q)
+GanttChart SJF(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM)
 {
 }
 
 
-GanttChart SRTF(ProcessQueue q)
+GanttChart SRTF(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM)
 {
 }
 
 
-GanttChart RR(ProcessQueue q, const double timeQuantum)
+GanttChart RR(ProcessQueue pQ, const double timeQuantum)
 {
 }
 
 
-GanttChart priority(ProcessQueue q)
+GanttChart Priority(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM)
 {
 }
 
 
-GanttChart preemptivePriority(ProcessQueue q)
+GanttChart PreemptivePriority(ProcessQueue pQ, const double timeQuantum = NO_TIME_QUANTUM)
 {
 }
 
 
-GanttChart priorityRR(ProcessQueue q, const double timeQuantum)
+GanttChart PriorityRR(ProcessQueue pQ, const double timeQuantum)
 {
 }*/
