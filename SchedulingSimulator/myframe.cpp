@@ -1,59 +1,18 @@
-// wxWidgets "Hello World" Program
+#include "myframe.h"
 
-// For compilers that support precompilation, includes "wx/wx.h".
-#include <wx/wxprec.h>
-#include <wx/choice.h>
-#include <wx/stattext.h>
-
-#ifndef WX_PRECOMP
-#include <wx/wx.h>
-#endif
-
-constexpr int SIZEOF_ALGORITHMS = 7;
-
-
-class MyApp : public wxApp
-{
-public:
-    virtual bool OnInit();
-};
-
-class MyFrame : public wxFrame
-{
-public:
-    MyFrame();
-
-private:
-    void OnLoad(wxCommandEvent& event);
-    void OnSave(wxCommandEvent& event);
-    void OnSaveAs(wxCommandEvent& event);
-};
-
-enum
-{
-    ID_Load = 1,
-    ID_Save,
-    ID_SaveAs,
-    ID_ChoiceAlgorithms,
-    TEXT_CHOICE,
-    BUTTON_NEW,
-    BUTTON_DELETE
-};
-
-wxIMPLEMENT_APP(MyApp);
-
-bool MyApp::OnInit()
-{
-    MyFrame* frame = new MyFrame();
-    frame->Show(true);
-    return true;
-}
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator"))
+    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), blockSize(0)
 {
+    // MyFrame 초기화
+    SetMinSize(wxSize(512, 512));
+    SetBackgroundColour(*wxWHITE);
+    CreateStatusBar();
+    
+
+    // 상단 메뉴바
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Load, _T("&열기\tCtrl-O"));
+    menuFile->Append(ID_Open, _T("&열기\tCtrl-O"));
     menuFile->Append(ID_Save, _T("&저장\tCtrl-S"));
     menuFile->Append(ID_SaveAs, _T("&다른 이름으로 저장\tCtrl-Shift-S"));
 
@@ -62,6 +21,30 @@ MyFrame::MyFrame()
     SetMenuBar(menuBar);
 
 
+    // 상단 window
+    // 프로세스 관리 버튼
+    wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
+    new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
+    new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2*BUTTON_WIDTH, 5), btnSize);
+
+    // 프로세스 입력 창
+    wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
+    long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Process ID "), wxPoint(10, 90), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Arrival Time "), wxPoint(10, 90 + TEXT_HEIGHT), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Burst Time "), wxPoint(10, 90 + 2*TEXT_HEIGHT), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Priority "), wxPoint(10, 90 + 3*TEXT_HEIGHT), textSize, style));
+    wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
+    textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
+    // Create Scrollbar for upper window
+    upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 180));
+
+
+    // 하단 window
+    lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
+    // schedular 선택
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
@@ -72,24 +55,42 @@ MyFrame::MyFrame()
         _T("Preemptive Priority"),
         _T("Preemptive Priority with RR")
     };
-    new wxStaticText(this, TEXT_CHOICE, _T("스케줄링 알고리즘 선택"), wxPoint(0, 25), wxSize(210, 15), wxALIGN_CENTER);
-    wxChoice* choiceAlgorithms = new wxChoice(this, ID_ChoiceAlgorithms, wxPoint(15, 45), wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
-
-    new wxButton(this, BUTTON_NEW, _T("프로세스 생성"), wxPoint(55, 130), wxSize(100, 25));
-    new wxButton(this, BUTTON_DELETE, _T("프로세스 삭제"), wxPoint(55, 170), wxSize(100, 25));
+    wxChoice* choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
+        wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
 
 
-    Bind(wxEVT_MENU, &MyFrame::OnLoad, this, ID_Load);
+    // Event
+    Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnSaveAs, this, ID_SaveAs);
+    
+    Bind(wxEVT_BUTTON, &MyFrame::CreateProcessBlock, this, BUTTON_CREATE);
+    Bind(wxEVT_BUTTON, &MyFrame::DeleteProcessBlock, this, BUTTON_DELETE);
+    Bind(wxEVT_BUTTON, &MyFrame::ClearProcessBlock, this, BUTTON_CLEAR);
+    Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
+    Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
+    Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
+
+    Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
+    Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
 }
 
 
 
-
-void MyFrame::OnLoad(wxCommandEvent& event)
+void MyFrame::OnOpen(wxCommandEvent& event)
 {
-    wxMessageBox("Load : nop");
+    wxFileDialog openFileDialog(this, _("Open Test case file"), "", "",
+        "Process blocks (*.pcb)|*.pcb", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+    if (openFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+    wxFileInputStream input_stream(openFileDialog.GetPath());
+   
+    if (!input_stream.IsOk()) {
+
+        wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
+        return;
+    }
 }
 
 void MyFrame::OnSave(wxCommandEvent& event)
@@ -100,4 +101,109 @@ void MyFrame::OnSave(wxCommandEvent& event)
 void MyFrame::OnSaveAs(wxCommandEvent& event)
 {
     wxMessageBox("Save As : nop");
+}
+
+
+
+void MyFrame::CreateProcessBlock(wxCommandEvent& event)
+{
+    if (blockSize > MAX_PROCESS) {
+
+        wxMessageBox("프로세스의 최대 생성 개수를 초과하였습니다");
+        return;
+    }
+
+    wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
+    auto CreatePID = [](int blockSize) { return "P" + std::to_string(blockSize); };
+
+    textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, CreatePID(blockSize),
+        CreateBlockPos(0, blockSize), ctrlSize, wxBORDER_SIMPLE));
+    for (int i = 1; i != 4; i++)
+        textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "0",
+            CreateBlockPos(i, blockSize),ctrlSize, wxBORDER_SIMPLE));
+    ++blockSize;
+
+    SetUpperScroll();
+}
+
+void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
+{
+    if (blockSize <= 0)
+        return;
+
+    for (int i = 0; i != 4; i++) {
+
+        delete *(textctrls.cend() - 1);
+        textctrls.pop_back();
+    }
+    --blockSize;
+
+    SetUpperScroll();
+}
+
+void MyFrame::ClearProcessBlock(wxCommandEvent& event)
+{
+    for (auto elem : textctrls)
+        delete elem;
+    textctrls.clear();
+    blockSize = 0;
+
+    SetUpperScroll();
+}
+
+void MyFrame::OnUpperScroll(wxScrollEvent& event)
+{
+    ScrollUpperWindow();
+}
+
+
+
+void MyFrame::OnPaint(wxPaintEvent& event)
+{
+    wxSize size = GetClientSize();
+    wxPaintDC dc(this);
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(wxColour("#A4A4A4"));
+    dc.DrawRectangle(wxRect(0, 0, size.GetX(), 35));
+    dc.DrawRectangle(wxRect(0, lowerWindowY, size.GetX(), 35));
+}
+
+void MyFrame::OnWindowSize(wxSizeEvent& event)
+{
+    wxSize size = GetClientSize();
+    upperScroll->SetSize(wxSize(size.GetX(), 15));
+    SetUpperScroll();
+
+    Refresh();
+    Update();
+}
+
+
+
+wxPoint MyFrame::CreateBlockPos(int row, int column)
+{
+    wxPoint basePos = texts[1]->GetPosition();
+    return wxPoint(basePos.x + TEXT_WIDTH + column * TEXTCTRL_WIDTH, basePos.y + row * TEXT_HEIGHT);
+}
+
+void MyFrame::SetUpperScroll()
+{
+    int x = GetClientSize().GetX();
+    int virtualSize1 = 20 + TEXT_WIDTH + blockSize * TEXTCTRL_WIDTH;
+    upperScroll->SetScrollbar(upperScroll->GetThumbPosition(), x, virtualSize1, x);
+    ScrollUpperWindow();
+}
+
+void MyFrame::ScrollUpperWindow()
+{
+    int baseX = 10 - upperScroll->GetThumbPosition();
+    for (auto elem : texts)
+        elem->SetPosition(wxPoint(baseX, elem->GetPosition().y));
+    textctrlTQ->SetPosition(wxPoint(baseX + TEXT_WIDTH, textctrlTQ->GetPosition().y));
+    for (int i = 0; i != textctrls.size(); i++)
+        textctrls[i]->SetPosition(wxPoint(baseX + TEXT_WIDTH + (i / 4) * TEXTCTRL_WIDTH,
+            textctrls[i]->GetPosition().y));
+
+    Refresh();
+    Update();
 }
