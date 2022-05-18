@@ -25,6 +25,8 @@ public:
 	double GetBurstTime() const { return burstTime; }
 	unsigned GetPriority() const { return priority; }
 
+	//non-inline 함수는 progma_once가 안되는 issue 발생
+	/*
 	Process& operator=(const Process& rhs);
 
 	// 프로세스 객체와 'double'의 연산자로 서비스시간을 감소
@@ -35,6 +37,52 @@ public:
 	Process& operator+=(const double time);
 	const Process operator-(const double time);
 	const Process operator+(const double time);
+	*/
+
+
+	/////////////////////////////////////////////////////////////////////////////
+	Process& operator=(const Process& rhs)
+	{
+		this->pid = rhs.pid;
+		this->arrivalTime = rhs.arrivalTime;
+		this->burstTime = rhs.burstTime;
+		this->priority = rhs.priority;
+
+		return *this;
+	}
+
+	Process& operator-=(const double time)
+	{
+		this->burstTime -= time;
+		return *this;
+	}
+
+	Process& operator+=(const double time)
+	{
+		*this -= -time;
+		return *this;
+	}
+
+	const Process operator-(const double time)
+	{
+		Process temp(*this);
+		temp -= time;
+		return temp;
+	}
+
+	const Process operator+(const double time)
+	{
+		Process temp(*this);
+		temp += time;
+		return temp;
+	}
+
+
+/// <summary>
+/// ////////////////////////////////////////////////////////////
+/// </summary>
+
+
 
 private:
 	std::string pid;		// 프로세스 ID
@@ -57,6 +105,7 @@ using GanttChart = std::list<std::pair<std::string, double>>;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
 Process& Process::operator=(const Process& rhs)
 {
 	this->pid = rhs.pid;
@@ -97,4 +146,4 @@ const Process Process::operator+(const double time)
 std::unique_ptr<ProcessQueue> CreateProcessQueue()
 {
 	return std::make_unique<ProcessQueue>(CMP_PROCESS);
-}
+}*/

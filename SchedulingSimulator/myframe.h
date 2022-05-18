@@ -4,7 +4,7 @@
 #include <wx/wx.h>
 #endif
 #include <wx/wfstream.h>
-
+#include "cpu_scheduler.h"
 
 
 enum
