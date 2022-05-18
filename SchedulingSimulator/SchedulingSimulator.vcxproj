@@ -143,8 +143,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cpu_scheduler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="myframe.cpp" />
+    <ClCompile Include="process.cpp" />
+    <ClCompile Include="waiting_queue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cpu_scheduler.h" />

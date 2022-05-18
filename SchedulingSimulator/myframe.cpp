@@ -114,9 +114,9 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
     }
 
     wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
-    auto CreatePID = [](int blockSize) { return "P" + std::to_string(blockSize); };
+    //auto CreatePID = [](int blockSize) { return "P" + std::to_string(blockSize); };
 
-    textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, CreatePID(blockSize),
+    textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "P" + std::to_string(blockSize),
         CreateBlockPos(0, blockSize), ctrlSize, wxBORDER_SIMPLE));
     for (int i = 1; i != 4; i++)
         textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "0",
@@ -176,6 +176,17 @@ void MyFrame::OnWindowSize(wxSizeEvent& event)
 
     Refresh();
     Update();
+}
+
+void MyFrame::OnMotion(wxMouseEvent& event) {
+
+    wxPoint currentPos = wxGetMousePosition();
+
+    if (event.Dragging()) {
+
+        wxGetMousePosition();
+    }
+    event.Skip();
 }
 
 
