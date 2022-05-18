@@ -6,7 +6,6 @@
 #include <wx/wfstream.h>
 
 
-constexpr int SIZEOF_ALGORITHMS = 7;
 
 enum
 {

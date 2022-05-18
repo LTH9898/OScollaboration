@@ -147,6 +147,7 @@
     <ClCompile Include="myframe.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cpu_scheduler.h" />
     <ClInclude Include="myframe.h" />
     <ClInclude Include="process.h" />
     <ClInclude Include="waiting_queue.h" />
