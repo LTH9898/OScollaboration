@@ -75,21 +75,21 @@ Process& Process::operator-=(const double time)
 
 Process& Process::operator+=(const double time)
 {
-	*this -= -time;
+	this->burstTime += time;
 	return *this;
 }
 
 const Process Process::operator-(const double time)
 {
 	Process temp(*this);
-	temp -= time;
+	temp.burstTime -= time;
 	return temp;
 }
 
 const Process Process::operator+(const double time)
 {
 	Process temp(*this);
-	temp += time;
+	temp.burstTime += time;
 	return temp;
 }
 
