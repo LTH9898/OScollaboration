@@ -25,34 +25,34 @@ public:
 
 	Process& operator=(const Process& rhs);
 
-	// ÇÁ·Î¼¼½º °´Ã¼¿Í 'double'ÀÇ ¿¬»êÀÚ·Î ¼­ºñ½º½Ã°£À» °¨¼Ò
-	// ¿¹) Process P1 ( burstTime = 10 )
+	// ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ 'double'ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ ï¿½ï¿½ï¿½ñ½º½Ã°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	// ï¿½ï¿½) Process P1 ( burstTime = 10 )
 	//     P1 -= 3
-	// °á°ú) P1 ( burstTime = 7 )
+	// ï¿½ï¿½ï¿½) P1 ( burstTime = 7 )
 	Process& operator-=(const double time);
 	Process& operator+=(const double time);
 	const Process operator-(const double time);
 	const Process operator+(const double time);
 
 private:
-	std::string pid;		// ÇÁ·Î¼¼½º ID
-	double arrivalTime;		// µµÂø½Ã°£
-	double burstTime;		// ¼­ºñ½º½Ã°£
-	unsigned priority;		// ¿ì¼±¼øÀ§
+	std::string pid;		// ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ ID
+	double arrivalTime;		// ï¿½ï¿½ï¿½ï¿½ï¿½Ã°ï¿½
+	double burstTime;		// ï¿½ï¿½ï¿½ñ½º½Ã°ï¿½
+	unsigned priority;		// ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½
 };
 
 
 auto CMP_PROCESS = [](const Process& lhs, const Process& rhs) { return lhs.GetArrivalTime() > rhs.GetArrivalTime(); };
 
-// µµÂø ½Ã°£ÀÌ °¡Àå ÀÛÀº ÇÁ·Î¼¼½º°¡ °¡Àå ³ôÀº ¿ì¼±¼øÀ§¸¦ °®´Â ÇÁ·Î¼¼½º Å¥
+// ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ì¼±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ Å¥
 using ProcessQueue = std::priority_queue<Process, std::vector<Process>, decltype(CMP_PROCESS)>;
-// ÇÁ·Î¼¼½º Å¥ »ý¼º ÇÔ¼ö
+// ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ Å¥ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 ProcessQueue CreateProcessQueue();
-// °£Æ® Â÷Æ®¿¡ ÇÁ·Î¼¼½º ID¿Í ±× ÇÁ·Î¼¼½ºÀÇ Á¾·á ½ÃÁ¡À» ±â·Ï
+// ï¿½ï¿½Æ® ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ IDï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 using GanttChart = std::queue<std::pair<std::string, double>>;
 
 
-
+//////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Process& Process::operator=(const Process& rhs)
 {
