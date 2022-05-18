@@ -4,6 +4,7 @@
 #include <wx/wx.h>
 #endif
 #include <wx/wfstream.h>
+#include "cpu_scheduler.h"
 
 
 
@@ -39,11 +40,13 @@ private:
 
     void OnPaint(wxPaintEvent& event);
     void OnWindowSize(wxSizeEvent& event);
+    void OnMotion(wxMouseEvent& event);
 
     // Functions
     wxPoint CreateBlockPos(int row, int column);
     void SetUpperScroll();
     void ScrollUpperWindow();
+
 
     // Private variables
     wxString currentFilePath;
@@ -55,6 +58,8 @@ private:
     int blockSize;
 
     int lowerWindowY;
+
+    wxPoint previousPos;
 
     // Constants
     enum

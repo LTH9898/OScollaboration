@@ -1,8 +1,9 @@
-#pragma once
 #include <string>
 #include <queue>
 #include <list>
 #include <memory>
+#ifndef _PROCESS_H
+#define _PROCESS_H
 
 
 class Process
@@ -54,47 +55,4 @@ std::unique_ptr<ProcessQueue> CreateProcessQueue();
 // 간트 차트에 프로세스 ID와 그 프로세스의 종료 시점을 기록
 using GanttChart = std::list<std::pair<std::string, double>>;
 
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Process& Process::operator=(const Process& rhs)
-{
-	this->pid = rhs.pid;
-	this->arrivalTime = rhs.arrivalTime;
-	this->burstTime = rhs.burstTime;
-	this->priority = rhs.priority;
-
-	return *this;
-}
-
-Process& Process::operator-=(const double time)
-{
-	this->burstTime -= time;
-	return *this;
-}
-
-Process& Process::operator+=(const double time)
-{
-	this->burstTime += time;
-	return *this;
-}
-
-const Process Process::operator-(const double time)
-{
-	Process temp(*this);
-	temp.burstTime -= time;
-	return temp;
-}
-
-const Process Process::operator+(const double time)
-{
-	Process temp(*this);
-	temp.burstTime += time;
-	return temp;
-}
-
-
-std::unique_ptr<ProcessQueue> CreateProcessQueue()
-{
-	return std::make_unique<ProcessQueue>(CMP_PROCESS);
-}
+#endif
