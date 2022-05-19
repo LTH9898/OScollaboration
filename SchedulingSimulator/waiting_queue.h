@@ -1,7 +1,7 @@
+#ifndef __WAITING_QUEUE_H__
+#define __WAITING_QUEUE_H__
 #include "process.h"
 #include <vector>
-#ifndef _WAITING_QUEUE_H
-#define _WAITING_QUEUE_H
 
 
 enum class Scheduling
