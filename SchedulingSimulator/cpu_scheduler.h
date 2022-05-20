@@ -1,8 +1,7 @@
+#ifndef __CPU_SCHEDULER_H__
+#define __CPU_SCHEDULER_H__
 #include "waiting_queue.h"
-#ifndef _CPU_SCHEDULER_H
-#define _CPU_SCHEDULER_H
 
-//upload test
 
 class CpuScheduler
 {

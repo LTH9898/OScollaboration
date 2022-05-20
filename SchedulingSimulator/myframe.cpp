@@ -2,7 +2,7 @@
 
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), blockSize(0)
+    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0)
 {
     // MyFrame 초기화
     SetMinSize(wxSize(512, 512));
@@ -39,7 +39,7 @@ MyFrame::MyFrame()
     wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
     // Create Scrollbar for upper window
-    upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 180));
+    upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
 
 
     // 하단 window
@@ -73,6 +73,8 @@ MyFrame::MyFrame()
 
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
+    Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
+    Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
 }
 
 
@@ -151,11 +153,6 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
-void MyFrame::OnUpperScroll(wxScrollEvent& event)
-{
-    ScrollUpperWindow();
-}
-
 
 
 void MyFrame::OnPaint(wxPaintEvent& event)
@@ -164,8 +161,8 @@ void MyFrame::OnPaint(wxPaintEvent& event)
     wxPaintDC dc(this);
     dc.SetPen(*wxTRANSPARENT_PEN);
     dc.SetBrush(wxColour("#A4A4A4"));
-    dc.DrawRectangle(wxRect(0, 0, size.GetX(), 35));
-    dc.DrawRectangle(wxRect(0, lowerWindowY, size.GetX(), 35));
+    dc.DrawRectangle(wxRect(0, 0, size.GetX(), BAR_SIZE));
+    dc.DrawRectangle(wxRect(0, lowerWindowY, size.GetX(), BAR_SIZE));
 }
 
 void MyFrame::OnWindowSize(wxSizeEvent& event)
@@ -180,13 +177,14 @@ void MyFrame::OnWindowSize(wxSizeEvent& event)
 
 void MyFrame::OnMotion(wxMouseEvent& event) {
 
-    wxPoint currentPos = wxGetMousePosition();
-
     if (event.Dragging()) {
 
-        wxGetMousePosition();
+        wxPoint currentPos = event.GetLogicalPosition(_m_clntDC);
+        int direction = currentPos.x - previousPos.x;
+        previousPos = currentPos;
+
+        DragUpperWindow(currentPos, direction);
     }
-    event.Skip();
 }
 
 
@@ -200,8 +198,8 @@ wxPoint MyFrame::CreateBlockPos(int row, int column)
 void MyFrame::SetUpperScroll()
 {
     int x = GetClientSize().GetX();
-    int virtualSize1 = 20 + TEXT_WIDTH + blockSize * TEXTCTRL_WIDTH;
-    upperScroll->SetScrollbar(upperScroll->GetThumbPosition(), x, virtualSize1, x);
+    int virtualSize = 20 + TEXT_WIDTH + blockSize * TEXTCTRL_WIDTH;
+    upperScroll->SetScrollbar(upperScroll->GetThumbPosition(), x, virtualSize, x);
     ScrollUpperWindow();
 }
 
@@ -217,4 +215,20 @@ void MyFrame::ScrollUpperWindow()
 
     Refresh();
     Update();
+}
+
+void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
+{
+    wxPoint tqPos = texts[0]->GetPosition();
+    wxPoint pbPos = texts[1]->GetPosition();
+
+    if (BAR_SIZE < currentPos.y && currentPos.y < upperScroll->GetPosition().y &&
+        !IsPosInRange(currentPos, tqPos, tqPos.y + TEXT_HEIGHT, tqPos.x + TEXT_WIDTH + TEXTCTRL_WIDTH) &&
+        !IsPosInRange(currentPos, pbPos, pbPos.y + 4 * TEXT_HEIGHT, pbPos.x + TEXT_WIDTH + blockSize * TEXTCTRL_WIDTH)) {
+
+        SetStatusText(std::to_string(direction));
+
+        upperScroll->SetThumbPosition(upperScroll->GetThumbPosition() - direction);
+        ScrollUpperWindow();
+    }
 }

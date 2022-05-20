@@ -1,9 +1,9 @@
+#ifndef __PROCESS_H__
+#define __PROCESS_H__
 #include <string>
 #include <queue>
 #include <list>
 #include <memory>
-#ifndef _PROCESS_H
-#define _PROCESS_H
 
 
 class Process
