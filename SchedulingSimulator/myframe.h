@@ -18,6 +18,10 @@ enum
     BUTTON_CREATE,
     BUTTON_DELETE,
     BUTTON_CLEAR,
+    BUTTON_CONFIRM,
+    BUTTON_RUN,
+    BUTTON_STEPRUN,
+    BUTTON_GANTTCLEAR,
     SCROLL_UPPER,
 };
 
@@ -40,12 +44,20 @@ private:
     void DeleteProcessBlock(wxCommandEvent& event);
     void ClearProcessBlock(wxCommandEvent& event);
     void OnUpperScroll(wxScrollEvent& event)
-        { ScrollUpperWindow(); }
+
+
+    {
+        ScrollUpperWindow();
+    }
+    void ConFirmProcessBlock(wxCommandEvent& event);
+
     // Main window event
     void OnPaint(wxPaintEvent& event);
     void OnWindowSize(wxSizeEvent& event);
     void OnLeftDown(wxMouseEvent& event)
-        { previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip(); }
+    {
+        previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip();
+    }
     void OnMotion(wxMouseEvent& event);
 
     // Functions
@@ -58,6 +70,7 @@ private:
 
 
     // Lower window functions
+    void CreateGanttChart(wxCommandEvent& event);
     //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
 
 
@@ -76,8 +89,10 @@ private:
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
-
     wxChoice* choiceAlgorithms;
+
+
+    std::unique_ptr<ProcessQueue> MakeProcessQueue();
 
     int blockSize;
 
@@ -95,13 +110,15 @@ private:
         TEXT_WIDTH = 95,
         TEXT_HEIGHT = 20,
         TEXTCTRL_WIDTH = 70,
-        
+
         MAX_PROCESS = 32,
         SIZEOF_ALGORITHMS = 7
     };
 };
 
 inline bool IsPosInRange(const wxPoint& pos, const wxPoint& upperLeft, int lower, int right)
-    { return upperLeft.x <= pos.x && pos.x <= right && upperLeft.y <= pos.y && pos.y <= lower; }
+{
+    return upperLeft.x <= pos.x && pos.x <= right && upperLeft.y <= pos.y && pos.y <= lower;
+}
 
 #endif
