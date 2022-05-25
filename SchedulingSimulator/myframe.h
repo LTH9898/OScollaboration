@@ -31,6 +31,7 @@ class MyFrame : public wxFrame
 {
 public:
     MyFrame();
+    
 
 private:
     // Events
@@ -65,6 +66,8 @@ private:
     void SetUpperScroll();
     void ScrollUpperWindow();
     void DragUpperWindow(const wxPoint& currentPos, int direction);
+    void GetSelectedAlgorithm();
+
 
     // Lower window functions
     void CreateGanttChart(wxCommandEvent& event);
@@ -78,7 +81,10 @@ private:
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
+    wxChoice* choiceAlgorithms;
+
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
+
     int blockSize;
 
     int lowerWindowY;
