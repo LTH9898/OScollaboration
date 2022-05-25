@@ -27,7 +27,7 @@ MyFrame::MyFrame()
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
     new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2*BUTTON_WIDTH, 5), btnSize);
-    
+    new wxButton(this, BUTTON_CONFIRM, _T("Confirm"), wxPoint(50 + 3*BUTTON_WIDTH, 5), btnSize);
 
     // 프로세스 입력 창
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
@@ -74,9 +74,12 @@ MyFrame::MyFrame()
     Bind(wxEVT_BUTTON, &MyFrame::CreateProcessBlock, this, BUTTON_CREATE);
     Bind(wxEVT_BUTTON, &MyFrame::DeleteProcessBlock, this, BUTTON_DELETE);
     Bind(wxEVT_BUTTON, &MyFrame::ClearProcessBlock, this, BUTTON_CLEAR);
+    Bind(wxEVT_BUTTON, &MyFrame::ConFirmProcessBlock, this, BUTTON_CONFIRM);
     Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
+    
+
 
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
@@ -137,6 +140,13 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
+void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process 정의 후에 이제 Confirm 하면 넘어가는 것.
+{
+    CreateProcessQueue;
+    wxMessageBox(textctrls[1]->GetValue());
+    
+}
+
 void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
 {
     if (blockSize <= 0)
@@ -163,11 +173,15 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
 }
 
 void MyFrame::CreateGanttChart(wxCommandEvent& event) 
-{
-
+{ 
+ 
+    wxPaintDC dc(this);
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(wxColour("#e31919"));
+    dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));
 }
 
-void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method
+void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method , wxpaitDC의 경우 OnPaint안에서만 수행 가능
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);
