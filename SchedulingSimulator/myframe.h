@@ -71,6 +71,7 @@ private:
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
+    std::unique_ptr<ProcessQueue> MakeProcessQueue();
     int blockSize;
 
     int lowerWindowY;

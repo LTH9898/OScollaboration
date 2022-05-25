@@ -142,8 +142,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 
 void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process 정의 후에 이제 Confirm 하면 넘어가는 것.
 {
-    CreateProcessQueue;
-    wxMessageBox(textctrls[1]->GetValue());
+   
     
 }
 
@@ -257,4 +256,23 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
         upperScroll->SetThumbPosition(upperScroll->GetThumbPosition() - direction);
         ScrollUpperWindow();
     }
+}
+
+
+std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
+{
+    std::unique_ptr<ProcessQueue> pQ = CreateProcessQueue();
+
+    for (auto i = 0; i + 3 < blockSize; i = i + 4) {
+        std::string tempPid = textctrls[i]->GetValue().ToStdString();
+        double tempArrivaltime;
+        textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
+        double tempBursttime;
+        textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
+        unsigned tempPriority;
+        textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
+     
+        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
+    }
+    return std::move(pQ);
 }
