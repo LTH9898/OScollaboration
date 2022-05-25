@@ -270,7 +270,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         unsigned tempPriority;
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
 
-        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
+        pQ->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
     }
     return std::move(pQ);
 }

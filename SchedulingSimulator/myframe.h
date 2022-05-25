@@ -43,17 +43,13 @@ private:
     void DeleteProcessBlock(wxCommandEvent& event);
     void ClearProcessBlock(wxCommandEvent& event);
     void OnUpperScroll(wxScrollEvent& event)
-    {
-        ScrollUpperWindow();
-    }
+        { ScrollUpperWindow(); }
     void ConFirmProcessBlock(wxCommandEvent& event);
     // Main window event
     void OnPaint(wxPaintEvent& event);
     void OnWindowSize(wxSizeEvent& event);
     void OnLeftDown(wxMouseEvent& event)
-    {
-        previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip();
-    }
+        { previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip(); }
     void OnMotion(wxMouseEvent& event);
 
     // Functions
