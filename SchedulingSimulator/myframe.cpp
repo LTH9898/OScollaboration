@@ -55,7 +55,7 @@ MyFrame::MyFrame()
         _T("Preemptive Priority"),
         _T("Preemptive Priority with RR")
     };
-    wxChoice* choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
+    choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
 
 
@@ -232,3 +232,42 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
         ScrollUpperWindow();
     }
 }
+
+void MyFrame::GetSelectedAlgorithm() {
+    int idx = choiceAlgorithms->GetSelection();
+    
+    
+    //MyFrame 멤버변수 CpuSchedular로 교체
+    CpuScheduler cs;
+
+    
+    switch (idx) 
+    {
+    case 0://FCFS
+        cs.SetAlgorithm(Scheduling::FCFS, false, false);
+        break;
+    case 1://SJF
+        cs.SetAlgorithm(Scheduling::SJF, false, false);
+        break;
+    case 2://SRJF
+        cs.SetAlgorithm(Scheduling::FCFS, true, false);
+        break;
+    case 3://RR
+        cs.SetAlgorithm(Scheduling::FCFS, false, true);
+        break;
+    case 4://Non-preemptive Priority
+        cs.SetAlgorithm(Scheduling::Priority, false, false);
+        break;
+    case 5://Preemptive Priority
+        cs.SetAlgorithm(Scheduling::Priority, true, false);
+        break;
+    case 6://Non-preemptive Priority with RR
+        cs.SetAlgorithm(Scheduling::Priority, false, true);
+        break;
+    default://Not selected
+        break;
+            //예외처리
+    }
+
+}
+
