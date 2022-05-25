@@ -27,6 +27,7 @@ MyFrame::MyFrame()
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
     new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2*BUTTON_WIDTH, 5), btnSize);
+    
 
     // 프로세스 입력 창
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
@@ -55,8 +56,14 @@ MyFrame::MyFrame()
         _T("Preemptive Priority"),
         _T("Preemptive Priority with RR")
     };
+    // 각 choice, button 위치
     wxChoice* choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
+    new wxButton(this, BUTTON_RUN, _T("Run"), wxPoint(200, lowerWindowY + 6), btnSize);
+    new wxButton(this, BUTTON_STEPRUN, _T("StepRun"), wxPoint(200 + BUTTON_WIDTH + 10, lowerWindowY + 6), btnSize);
+    new wxButton(this, BUTTON_GANTTCLEAR, _T("GanttClear"), wxPoint(200 + (BUTTON_WIDTH + 10 )*2, lowerWindowY + 6), btnSize);
+
+    
 
 
     // Event
@@ -75,6 +82,8 @@ MyFrame::MyFrame()
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
     Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
+
+    Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BUTTON_RUN);
 }
 
 
@@ -115,7 +124,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
         return;
     }
 
-    wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
+    wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT); 
     //auto CreatePID = [](int blockSize) { return "P" + std::to_string(blockSize); };
 
     textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "P" + std::to_string(blockSize),
@@ -153,9 +162,12 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
+void MyFrame::CreateGanttChart(wxCommandEvent& event) 
+{
 
+}
 
-void MyFrame::OnPaint(wxPaintEvent& event)
+void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);

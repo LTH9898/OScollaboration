@@ -18,6 +18,9 @@ enum
     BUTTON_CREATE,
     BUTTON_DELETE,
     BUTTON_CLEAR,
+    BUTTON_RUN,
+    BUTTON_STEPRUN,
+    BUTTON_GANTTCLEAR,
     SCROLL_UPPER,
 };
 
@@ -55,6 +58,7 @@ private:
     void DragUpperWindow(const wxPoint& currentPos, int direction);
 
     // Lower window functions
+    void CreateGanttChart(wxCommandEvent& event);
     //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
 
 
