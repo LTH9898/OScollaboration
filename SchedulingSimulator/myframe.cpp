@@ -8,7 +8,7 @@ MyFrame::MyFrame()
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
-    
+
 
     // 상단 메뉴바
     wxMenu* menuFile = new wxMenu;
@@ -26,7 +26,8 @@ MyFrame::MyFrame()
     wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
-    new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2*BUTTON_WIDTH, 5), btnSize);
+    new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2 * BUTTON_WIDTH, 5), btnSize);
+    new wxButton(this, BUTTON_CONFIRM, _T("Confirm"), wxPoint(50 + 3 * BUTTON_WIDTH, 5), btnSize);
 
     // 프로세스 입력 창
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
@@ -34,8 +35,8 @@ MyFrame::MyFrame()
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Process ID "), wxPoint(10, 90), textSize, style));
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Arrival Time "), wxPoint(10, 90 + TEXT_HEIGHT), textSize, style));
-    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Burst Time "), wxPoint(10, 90 + 2*TEXT_HEIGHT), textSize, style));
-    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Priority "), wxPoint(10, 90 + 3*TEXT_HEIGHT), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Burst Time "), wxPoint(10, 90 + 2 * TEXT_HEIGHT), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Priority "), wxPoint(10, 90 + 3 * TEXT_HEIGHT), textSize, style));
     wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
     // Create Scrollbar for upper window
@@ -55,26 +56,37 @@ MyFrame::MyFrame()
         _T("Preemptive Priority"),
         _T("Preemptive Priority with RR")
     };
+    // 각 choice, button 위치
     wxChoice* choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
+    new wxButton(this, BUTTON_RUN, _T("Run"), wxPoint(200, lowerWindowY + 6), btnSize);
+    new wxButton(this, BUTTON_STEPRUN, _T("StepRun"), wxPoint(200 + BUTTON_WIDTH + 10, lowerWindowY + 6), btnSize);
+    new wxButton(this, BUTTON_GANTTCLEAR, _T("GanttClear"), wxPoint(200 + (BUTTON_WIDTH + 10) * 2, lowerWindowY + 6), btnSize);
+
+
 
 
     // Event
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnSaveAs, this, ID_SaveAs);
-    
+
     Bind(wxEVT_BUTTON, &MyFrame::CreateProcessBlock, this, BUTTON_CREATE);
     Bind(wxEVT_BUTTON, &MyFrame::DeleteProcessBlock, this, BUTTON_DELETE);
     Bind(wxEVT_BUTTON, &MyFrame::ClearProcessBlock, this, BUTTON_CLEAR);
+    Bind(wxEVT_BUTTON, &MyFrame::ConFirmProcessBlock, this, BUTTON_CONFIRM);
     Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
+
+
 
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
     Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
+
+    Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BUTTON_RUN);
 }
 
 
@@ -87,7 +99,7 @@ void MyFrame::OnOpen(wxCommandEvent& event)
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
     wxFileInputStream input_stream(openFileDialog.GetPath());
-   
+
     if (!input_stream.IsOk()) {
 
         wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
@@ -122,10 +134,16 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
         CreateBlockPos(0, blockSize), ctrlSize, wxBORDER_SIMPLE));
     for (int i = 1; i != 4; i++)
         textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "0",
-            CreateBlockPos(i, blockSize),ctrlSize, wxBORDER_SIMPLE));
+            CreateBlockPos(i, blockSize), ctrlSize, wxBORDER_SIMPLE));
     ++blockSize;
 
     SetUpperScroll();
+}
+
+void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process 정의 후에 이제 Confirm 하면 넘어가는 것.
+{
+
+
 }
 
 void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
@@ -135,7 +153,7 @@ void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
 
     for (int i = 0; i != 4; i++) {
 
-        delete *(textctrls.cend() - 1);
+        delete* (textctrls.cend() - 1);
         textctrls.pop_back();
     }
     --blockSize;
@@ -153,9 +171,16 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
+void MyFrame::CreateGanttChart(wxCommandEvent& event)
+{
 
+    wxPaintDC dc(this);
+    dc.SetPen(*wxTRANSPARENT_PEN);
+    dc.SetBrush(wxColour("#e31919"));
+    dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));
+}
 
-void MyFrame::OnPaint(wxPaintEvent& event)
+void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method , wxpaitDC의 경우 OnPaint안에서만 수행 가능
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);
@@ -231,4 +256,23 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
         upperScroll->SetThumbPosition(upperScroll->GetThumbPosition() - direction);
         ScrollUpperWindow();
     }
+}
+
+
+std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
+{
+    std::unique_ptr<ProcessQueue> pQ = CreateProcessQueue();
+
+    for (auto i = 0; i + 3 < blockSize; i = i + 4) {
+        std::string tempPid = textctrls[i]->GetValue().ToStdString();
+        double tempArrivaltime;
+        textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
+        double tempBursttime;
+        textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
+        unsigned tempPriority;
+        textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
+
+        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
+    }
+    return std::move(pQ);
 }
