@@ -65,6 +65,14 @@ private:
     wxString currentFilePath;
 
     std::vector<wxStaticText*> texts;
+
+
+    /////////////
+
+    std::vector<wxStaticText*> gant;
+    void DrawGantChart();
+
+    ////////////////
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
