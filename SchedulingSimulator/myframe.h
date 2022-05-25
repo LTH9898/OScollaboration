@@ -44,7 +44,7 @@ private:
     void ClearProcessBlock(wxCommandEvent& event);
     void OnUpperScroll(wxScrollEvent& event)
         { ScrollUpperWindow(); }
-    void ConFirmProcessBlock(wxCommandEvent& event);
+    //void ConFirmProcessBlock(wxCommandEvent& event);
     // Main window event
     void OnPaint(wxPaintEvent& event);
     void OnWindowSize(wxSizeEvent& event);

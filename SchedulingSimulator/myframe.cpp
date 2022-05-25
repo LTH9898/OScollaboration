@@ -74,7 +74,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_BUTTON, &MyFrame::CreateProcessBlock, this, BUTTON_CREATE);
     Bind(wxEVT_BUTTON, &MyFrame::DeleteProcessBlock, this, BUTTON_DELETE);
     Bind(wxEVT_BUTTON, &MyFrame::ClearProcessBlock, this, BUTTON_CLEAR);
-    Bind(wxEVT_BUTTON, &MyFrame::ConFirmProcessBlock, this, BUTTON_CONFIRM);
+    //Bind(wxEVT_BUTTON, &MyFrame::ConFirmProcessBlock, this, BUTTON_CONFIRM);
     Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
@@ -140,11 +140,11 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
-void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process 정의 후에 이제 Confirm 하면 넘어가는 것.
-{
-   
-    
-}
+//void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process 정의 후에 이제 Confirm 하면 넘어가는 것.
+//{
+//   
+//    
+//}
 
 void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
 {
@@ -259,20 +259,20 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
 }
 
 
-std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
-{
-    std::unique_ptr<ProcessQueue> pQ = CreateProcessQueue();
-
-    for (auto i = 0; i + 3 < blockSize; i = i + 4) {
-        std::string tempPid = textctrls[i]->GetValue().ToStdString();
-        double tempArrivaltime;
-        textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
-        double tempBursttime;
-        textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
-        unsigned tempPriority;
-        textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
-     
-        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
-    }
-    return std::move(pQ);
-}
+//std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
+//{
+//    std::unique_ptr<ProcessQueue> pQ = CreateProcessQueue();
+//
+//    for (auto i = 0; i + 3 < blockSize; i = i + 4) {
+//        std::string tempPid = textctrls[i]->GetValue().ToStdString();
+//        double tempArrivaltime;
+//        textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
+//        double tempBursttime;
+//        textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
+//        unsigned tempPriority;
+//        textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
+//     
+//        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
+//    }
+//    return std::move(pQ);
+//}
