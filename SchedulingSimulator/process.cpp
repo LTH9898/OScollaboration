@@ -1,6 +1,5 @@
 #include "process.h"
 
-// testtest
 Process& Process::operator=(const Process& rhs)
 {
 	this->pid = rhs.pid;
