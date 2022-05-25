@@ -4,48 +4,50 @@
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0)
 {
-    // MyFrame ÃÊ±âÈ­
+    // MyFrame ì´ˆê¸°í™”
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
-    
 
-    // »ó´Ü ¸Ş´º¹Ù
+
+    // ìƒë‹¨ ë©”ë‰´ë°”
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Open, _T("&¿­±â\tCtrl-O"));
-    menuFile->Append(ID_Save, _T("&ÀúÀå\tCtrl-S"));
-    menuFile->Append(ID_SaveAs, _T("&´Ù¸¥ ÀÌ¸§À¸·Î ÀúÀå\tCtrl-Shift-S"));
+    menuFile->Append(ID_Open, _T("&ì—´ê¸°\tCtrl-O"));
+    menuFile->Append(ID_Save, _T("&ì €ì¥\tCtrl-S"));
+    menuFile->Append(ID_SaveAs, _T("&ë‹¤ë¥¸ ì´ë¦„ìœ¼ë¡œ ì €ì¥\tCtrl-Shift-S"));
 
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, "&ÆÄÀÏ");
+    menuBar->Append(menuFile, "&íŒŒì¼");
     SetMenuBar(menuBar);
 
 
-    // »ó´Ü window
-    // ÇÁ·Î¼¼½º °ü¸® ¹öÆ°
+    // ìƒë‹¨ window
+    // í”„ë¡œì„¸ìŠ¤ ê´€ë¦¬ ë²„íŠ¼
     wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
-    new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2*BUTTON_WIDTH, 5), btnSize);
-    new wxButton(this, BUTTON_CONFIRM, _T("Confirm"), wxPoint(50 + 3*BUTTON_WIDTH, 5), btnSize);
 
-    // ÇÁ·Î¼¼½º ÀÔ·Â Ã¢
+    new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2 * BUTTON_WIDTH, 5), btnSize);
+    new wxButton(this, BUTTON_CONFIRM, _T("Confirm"), wxPoint(50 + 3 * BUTTON_WIDTH, 5), btnSize);
+
+
+    // í”„ë¡œì„¸ìŠ¤ ì…ë ¥ ì°½
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Process ID "), wxPoint(10, 90), textSize, style));
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Arrival Time "), wxPoint(10, 90 + TEXT_HEIGHT), textSize, style));
-    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Burst Time "), wxPoint(10, 90 + 2*TEXT_HEIGHT), textSize, style));
-    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Priority "), wxPoint(10, 90 + 3*TEXT_HEIGHT), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Burst Time "), wxPoint(10, 90 + 2 * TEXT_HEIGHT), textSize, style));
+    texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Priority "), wxPoint(10, 90 + 3 * TEXT_HEIGHT), textSize, style));
     wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
     // Create Scrollbar for upper window
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
 
 
-    // ÇÏ´Ü window
+    // í•˜ë‹¨ window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
-    // schedular ¼±ÅÃ
+    // schedular ì„ íƒ
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
@@ -56,29 +58,29 @@ MyFrame::MyFrame()
         _T("Preemptive Priority"),
         _T("Preemptive Priority with RR")
     };
-    // °¢ choice, button À§Ä¡
+    // ê° choice, button ìœ„ì¹˜
     wxChoice* choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
     new wxButton(this, BUTTON_RUN, _T("Run"), wxPoint(200, lowerWindowY + 6), btnSize);
     new wxButton(this, BUTTON_STEPRUN, _T("StepRun"), wxPoint(200 + BUTTON_WIDTH + 10, lowerWindowY + 6), btnSize);
-    new wxButton(this, BUTTON_GANTTCLEAR, _T("GanttClear"), wxPoint(200 + (BUTTON_WIDTH + 10 )*2, lowerWindowY + 6), btnSize);
 
-    
-
+    new wxButton(this, BUTTON_GANTTCLEAR, _T("GanttClear"), wxPoint(200 + (BUTTON_WIDTH + 10) * 2, lowerWindowY + 6), btnSize);
 
     // Event
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnSaveAs, this, ID_SaveAs);
-    
+
     Bind(wxEVT_BUTTON, &MyFrame::CreateProcessBlock, this, BUTTON_CREATE);
     Bind(wxEVT_BUTTON, &MyFrame::DeleteProcessBlock, this, BUTTON_DELETE);
     Bind(wxEVT_BUTTON, &MyFrame::ClearProcessBlock, this, BUTTON_CLEAR);
-    //Bind(wxEVT_BUTTON, &MyFrame::ConFirmProcessBlock, this, BUTTON_CONFIRM);
+
     Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     
+
+
 
 
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
@@ -99,7 +101,7 @@ void MyFrame::OnOpen(wxCommandEvent& event)
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
     wxFileInputStream input_stream(openFileDialog.GetPath());
-   
+
     if (!input_stream.IsOk()) {
 
         wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
@@ -123,7 +125,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
 
-        wxMessageBox("ÇÁ·Î¼¼½ºÀÇ ÃÖ´ë »ı¼º °³¼ö¸¦ ÃÊ°úÇÏ¿´½À´Ï´Ù");
+        wxMessageBox("í”„ë¡œì„¸ìŠ¤ì˜ ìµœëŒ€ ìƒì„± ê°œìˆ˜ë¥¼ ì´ˆê³¼í•˜ì˜€ìŠµë‹ˆë‹¤");
         return;
     }
 
@@ -134,17 +136,20 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
         CreateBlockPos(0, blockSize), ctrlSize, wxBORDER_SIMPLE));
     for (int i = 1; i != 4; i++)
         textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "0",
-            CreateBlockPos(i, blockSize),ctrlSize, wxBORDER_SIMPLE));
+            CreateBlockPos(i, blockSize), ctrlSize, wxBORDER_SIMPLE));
     ++blockSize;
 
     SetUpperScroll();
 }
 
-//void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process Á¤ÀÇ ÈÄ¿¡ ÀÌÁ¦ Confirm ÇÏ¸é ³Ñ¾î°¡´Â °Í.
-//{
-//   
-//    
-//}
+
+
+void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process ì •ì˜ í›„ì— ì´ì œ Confirm í•˜ë©´ ë„˜ì–´ê°€ëŠ” ê²ƒ.
+{
+
+
+}
+
 
 void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
 {
@@ -153,7 +158,7 @@ void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
 
     for (int i = 0; i != 4; i++) {
 
-        delete *(textctrls.cend() - 1);
+        delete* (textctrls.cend() - 1);
         textctrls.pop_back();
     }
     --blockSize;
@@ -171,16 +176,16 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
-void MyFrame::CreateGanttChart(wxCommandEvent& event) 
-{ 
- 
+
+void MyFrame::CreateGanttChart(wxCommandEvent& event)
+{
+
     wxPaintDC dc(this);
     dc.SetPen(*wxTRANSPARENT_PEN);
     dc.SetBrush(wxColour("#e31919"));
     dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));
 }
-
-void MyFrame::OnPaint(wxPaintEvent& event) // À§¾Æ·¡ ³ª´©´Â bar±×¸®´Â method , wxpaitDCÀÇ °æ¿ì OnPaint¾È¿¡¼­¸¸ ¼öÇà °¡´É
+void MyFrame::OnPaint(wxPaintEvent& event) // ìœ„ì•„ë˜ ë‚˜ëˆ„ëŠ” barê·¸ë¦¬ëŠ” method , wxpaitDCì˜ ê²½ìš° OnPaintì•ˆì—ì„œë§Œ ìˆ˜í–‰ ê°€ëŠ¥
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);
@@ -271,7 +276,6 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
         unsigned tempPriority;
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
-     
         pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
     }
     return std::move(pQ);

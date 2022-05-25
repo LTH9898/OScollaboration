@@ -41,3 +41,5 @@ void waitingQueue::Priority(const Process& newProcess)
 	}
 	data.push_back(newProcess);
 }
+
+
