@@ -259,20 +259,20 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
 }
 
 
-//std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
-//{
-//    std::unique_ptr<ProcessQueue> pQ = CreateProcessQueue();
-//
-//    for (auto i = 0; i + 3 < blockSize; i = i + 4) {
-//        std::string tempPid = textctrls[i]->GetValue().ToStdString();
-//        double tempArrivaltime;
-//        textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
-//        double tempBursttime;
-//        textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
-//        unsigned tempPriority;
-//        textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
-//     
-//        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
-//    }
-//    return std::move(pQ);
-//}
+std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
+{
+    std::unique_ptr<ProcessQueue> pQ = CreateProcessQueue();
+
+    for (auto i = 0; i + 3 < blockSize; i = i + 4) {
+        std::string tempPid = textctrls[i]->GetValue().ToStdString();
+        double tempArrivaltime;
+        textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
+        double tempBursttime;
+        textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
+        unsigned tempPriority;
+        textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
+     
+        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
+    }
+    return std::move(pQ);
+}
