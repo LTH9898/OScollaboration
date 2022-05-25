@@ -79,14 +79,12 @@ MyFrame::MyFrame()
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
 
-
+    Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BUTTON_RUN);
 
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
     Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
-
-    Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BUTTON_RUN);
 }
 
 
@@ -173,11 +171,11 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
 
 void MyFrame::CreateGanttChart(wxCommandEvent& event)
 {
-
+    /*
     wxPaintDC dc(this);
     dc.SetPen(*wxTRANSPARENT_PEN);
     dc.SetBrush(wxColour("#e31919"));
-    dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));
+    dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));*/
 }
 
 void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method , wxpaitDC의 경우 OnPaint안에서만 수행 가능
