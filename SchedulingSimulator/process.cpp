@@ -1,6 +1,5 @@
 #include "process.h"
 
-// testtest
 Process& Process::operator=(const Process& rhs)
 {
 	this->pid = rhs.pid;
@@ -35,10 +34,4 @@ const Process Process::operator+(const double time)
 	Process temp(*this);
 	temp.burstTime += time;
 	return temp;
-}
-
-
-std::unique_ptr<ProcessQueue> CreateProcessQueue()
-{
-	return std::make_unique<ProcessQueue>(CMP_PROCESS);
 }

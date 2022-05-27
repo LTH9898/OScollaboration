@@ -3,7 +3,7 @@
 
 void CpuScheduler::StepForward()
 {
-	// CPU scheduler ÃÊ±âÈ­
+	// CPU scheduler ì´ˆê¸°í™”
 	if (!isRunning) {
 
 		if (!pQ)
@@ -14,7 +14,7 @@ void CpuScheduler::StepForward()
 		isRunning = true;
 	}
 
-	// ÇöÀç ½Ã°£ Àü¿¡ µµÂøÇÑ ÇÁ·Î¼¼½ºµéÀ» processQueue¿¡¼­ waitingQueue·Î ÀÌµ¿
+	// í˜„ìž¬ ì‹œê°„ ì „ì— ë„ì°©í•œ í”„ë¡œì„¸ìŠ¤ë“¤ì„ processQueueì—ì„œ waitingQueueë¡œ ì´ë™
 	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
 		wQ.Push(pQ->top());
 		pQ->pop();
@@ -24,7 +24,9 @@ void CpuScheduler::StepForward()
 	if (!wQ.Empty()) {
 
 		// Preemptive
+
 		if (isPreemptive) {
+			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
 			double delta;
@@ -84,9 +86,9 @@ void CpuScheduler::StepForward()
 		time = pQ->top().GetArrivalTime();
 	}
 
-	// ganttChart¿¡ ±â·Ï
+	// ganttChartì— ê¸°ë¡
 	ganttChart.emplace_back(currentProcess.GetPid(), time);
-	// scheduling Á¾·á Á¶°Ç
+	// scheduling ì¢…ë£Œ ì¡°ê±´
 	if (pQ->empty() && wQ.Empty()) {
 
 		isRunning = false;
