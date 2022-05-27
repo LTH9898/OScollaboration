@@ -5,6 +5,7 @@
 #include <wx/wx.h>
 #endif
 #include <wx/wfstream.h>
+#include <wx/stdpaths.h>
 #include "cpu_scheduler.h"
 
 

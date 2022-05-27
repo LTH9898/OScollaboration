@@ -8,6 +8,7 @@ MyFrame::MyFrame()
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
+    wxInitAllImageHandlers();
 
 
     // 상단 메뉴바
@@ -59,11 +60,15 @@ MyFrame::MyFrame()
 
     choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
-
+    
+    auto path = wxStandardPaths::Get().GetDataDir();
     wxSize bitmapBtnSize(BUTTON_HEIGHT, BUTTON_HEIGHT);
-    wxBitmap imgPlay("img\\play.png", wxBitmapType::wxBITMAP_TYPE_PNG);
-    wxBitmap imgNext("img\\next.png", wxBitmapType::wxBITMAP_TYPE_PNG);
-    wxBitmap imgStop("img\\stop.png", wxBitmapType::wxBITMAP_TYPE_PNG);
+    wxImage imgPlay(path + "\\img\\play.png");
+    wxImage imgNext(path + "\\img\\next.png");
+    wxImage imgStop(path + "\\img\\stop.png");
+    imgPlay.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
+    imgNext.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
+    imgStop.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
     new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_STEPRUN, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_GANTTCLEAR, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
