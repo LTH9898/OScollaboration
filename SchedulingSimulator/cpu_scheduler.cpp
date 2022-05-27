@@ -24,7 +24,7 @@ void CpuScheduler::StepForward()
 	if (!wQ.Empty()) {
 
 		// Preemptive
-		if (isPreemptive) {
+		if (isPreemptive) {/*
 			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
@@ -36,7 +36,7 @@ void CpuScheduler::StepForward()
 				delta = pQ->top().GetArrivalTime() - time;
 				wQ.Push(currentProcess - delta);
 			}
-			time += delta;
+			time += delta;*/
 		}
 
         // Round-Robin
