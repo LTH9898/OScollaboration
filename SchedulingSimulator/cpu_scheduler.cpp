@@ -14,7 +14,7 @@ void CpuScheduler::StepForward()
 		isRunning = true;
 	}
 
-	// 현재 시간 전에 도착한 프로세스들을 processQueue에서 waitingQueue로 이동 
+	// 현재 시간 전에 도착한 프로세스들을 processQueue에서 waitingQueue로 이동
 	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
 		wQ.Push(pQ->top());
 		pQ->pop();
@@ -24,7 +24,7 @@ void CpuScheduler::StepForward()
 	if (!wQ.Empty()) {
 
 		// Preemptive
-		if (isPreemptive) {
+		if (isPreemptive) {/*
 			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
@@ -36,12 +36,12 @@ void CpuScheduler::StepForward()
 				delta = pQ->top().GetArrivalTime() - time;
 				wQ.Push(currentProcess - delta);
 			}
-			time += delta;
+			time += delta;*/
 		}
 
         // Round-Robin
         else if (isRoundRobin) {
-
+            
             currentProcess = wQ.Top();
 
             if (currentProcess.GetBurstTime() > timeQuantum)
@@ -49,6 +49,11 @@ void CpuScheduler::StepForward()
                 currentProcess.SetBurstTime(currentProcess.GetBurstTime() - timeQuantum);
                 time += timeQuantum;
                 wQ.Pop();
+
+                while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
+                    wQ.Push(pQ->top());
+                    pQ->pop();
+                }
                 wQ.Push(currentProcess);
             }
             else
