@@ -263,7 +263,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
         unsigned tempPriority;
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
-        pQ->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
+        pQ->emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
     }
     return pQ;
 }
