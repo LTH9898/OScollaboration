@@ -39,8 +39,6 @@ void CpuScheduler::StepForward()
 			time += delta;*/
 		}
 
-
-
         // Round-Robin
         else if (isRoundRobin) {
             
@@ -56,6 +54,7 @@ void CpuScheduler::StepForward()
                     wQ.Push(pQ->top());
                     pQ->pop();
                 }
+
                 wQ.Push(currentProcess);
             }
             else
