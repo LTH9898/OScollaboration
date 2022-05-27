@@ -18,7 +18,6 @@ enum
     BUTTON_CREATE,
     BUTTON_DELETE,
     BUTTON_CLEAR,
-    BUTTON_CONFIRM,
     BUTTON_RUN,
     BUTTON_STEPRUN,
     BUTTON_GANTTCLEAR,
@@ -44,20 +43,13 @@ private:
     void DeleteProcessBlock(wxCommandEvent& event);
     void ClearProcessBlock(wxCommandEvent& event);
     void OnUpperScroll(wxScrollEvent& event)
-
-
-    {
-        ScrollUpperWindow();
-    }
-    void ConFirmProcessBlock(wxCommandEvent& event);
+        { ScrollUpperWindow(); }
 
     // Main window event
     void OnPaint(wxPaintEvent& event);
     void OnWindowSize(wxSizeEvent& event);
     void OnLeftDown(wxMouseEvent& event)
-    {
-        previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip();
-    }
+        { previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip(); }
     void OnMotion(wxMouseEvent& event);
 
     // Functions
@@ -66,11 +58,11 @@ private:
     void SetUpperScroll();
     void ScrollUpperWindow();
     void DragUpperWindow(const wxPoint& currentPos, int direction);
-    void GetSelectedAlgorithm();
-
 
     // Lower window functions
     void CreateGanttChart(wxCommandEvent& event);
+    std::unique_ptr<ProcessQueue> MakeProcessQueue();
+    void SetAlgorithmSelection();
     //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
 
 
@@ -83,10 +75,9 @@ private:
     wxScrollBar* upperScroll;
     wxChoice* choiceAlgorithms;
 
-    std::unique_ptr<ProcessQueue> MakeProcessQueue();
+    CpuScheduler scheduler;
 
     int blockSize;
-
     int lowerWindowY;
 
     wxClientDC _m_clntDC;

@@ -4,34 +4,32 @@
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0)
 {
-    // MyFrame ì´ˆê¸°í™”
+    // MyFrame ÃÊ±âÈ­
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
 
 
-    // ìƒë‹¨ ë©”ë‰´ë°”
+    // »ó´Ü ¸Þ´º¹Ù
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Open, _T("&ì—´ê¸°\tCtrl-O"));
-    menuFile->Append(ID_Save, _T("&ì €ìž¥\tCtrl-S"));
-    menuFile->Append(ID_SaveAs, _T("&ë‹¤ë¥¸ ì´ë¦„ìœ¼ë¡œ ì €ìž¥\tCtrl-Shift-S"));
+    menuFile->Append(ID_Open, _T("&¿­±â\tCtrl-O"));
+    menuFile->Append(ID_Save, _T("&ÀúÀå\tCtrl-S"));
+    menuFile->Append(ID_SaveAs, _T("&´Ù¸¥ ÀÌ¸§À¸·Î ÀúÀå\tCtrl-Shift-S"));
 
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, "&íŒŒì¼");
+    menuBar->Append(menuFile, _T("&ÆÄÀÏ"));
     SetMenuBar(menuBar);
 
 
-    // ìƒë‹¨ window
-    // í”„ë¡œì„¸ìŠ¤ ê´€ë¦¬ ë²„íŠ¼
+    // »ó´Ü window
+    // ÇÁ·Î¼¼½º °ü¸® ¹öÆ°
     wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
-
     new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2 * BUTTON_WIDTH, 5), btnSize);
-    new wxButton(this, BUTTON_CONFIRM, _T("Confirm"), wxPoint(50 + 3 * BUTTON_WIDTH, 5), btnSize);
 
 
-    // í”„ë¡œì„¸ìŠ¤ ìž…ë ¥ ì°½
+    // ÇÁ·Î¼¼½º ÀÔ·Â Ã¢
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
@@ -45,9 +43,9 @@ MyFrame::MyFrame()
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
 
 
-    // í•˜ë‹¨ window
+    // ÇÏ´Ü window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
-    // schedular ì„ íƒ
+    // schedular ¼±ÅÃ
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
@@ -60,7 +58,6 @@ MyFrame::MyFrame()
     };
 
     choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
-
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
     new wxButton(this, BUTTON_RUN, _T("Run"), wxPoint(200, lowerWindowY + 6), btnSize);
     new wxButton(this, BUTTON_STEPRUN, _T("StepRun"), wxPoint(200 + BUTTON_WIDTH + 10, lowerWindowY + 6), btnSize);
@@ -79,8 +76,6 @@ MyFrame::MyFrame()
     Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
-    
-
 
     Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BUTTON_RUN);
 
@@ -124,12 +119,11 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
 
-        wxMessageBox("í”„ë¡œì„¸ìŠ¤ì˜ ìµœëŒ€ ìƒì„± ê°œìˆ˜ë¥¼ ì´ˆê³¼í•˜ì˜€ìŠµë‹ˆë‹¤");
+        wxMessageBox(_T("ÇÁ·Î¼¼½ºÀÇ ÃÖ´ë »ý¼º °³¼ö¸¦ ÃÊ°úÇÏ¿´½À´Ï´Ù"));
         return;
     }
 
-    wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT); 
-    //auto CreatePID = [](int blockSize) { return "P" + std::to_string(blockSize); };
+    wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
 
     textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "P" + std::to_string(blockSize),
         CreateBlockPos(0, blockSize), ctrlSize, wxBORDER_SIMPLE));
@@ -139,14 +133,6 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
     ++blockSize;
 
     SetUpperScroll();
-}
-
-
-
-void MyFrame::ConFirmProcessBlock(wxCommandEvent& event) // Process ì •ì˜ í›„ì— ì´ì œ Confirm í•˜ë©´ ë„˜ì–´ê°€ëŠ” ê²ƒ.
-{
-
-
 }
 
 
@@ -184,7 +170,8 @@ void MyFrame::CreateGanttChart(wxCommandEvent& event)
     dc.SetBrush(wxColour("#e31919"));
     dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));*/
 }
-void MyFrame::OnPaint(wxPaintEvent& event) // ìœ„ì•„ëž˜ ë‚˜ëˆ„ëŠ” barê·¸ë¦¬ëŠ” method , wxpaitDCì˜ ê²½ìš° OnPaintì•ˆì—ì„œë§Œ ìˆ˜í–‰ ê°€ëŠ¥
+
+void MyFrame::OnPaint(wxPaintEvent& event) // À§¾Æ·¡ ³ª´©´Â bar±×¸®´Â method , wxpaitDCÀÇ °æ¿ì OnPaint¾È¿¡¼­¸¸ ¼öÇà °¡´É
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);
@@ -263,50 +250,11 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
 }
 
 
-void MyFrame::GetSelectedAlgorithm() {
-    int idx = choiceAlgorithms->GetSelection();
-    
-    
-    //MyFrame ï¿½ï¿½ï¿½ï¿½ CpuSchedularï¿½ï¿½ ï¿½ï¿½Ã¼
-    CpuScheduler cs;
-
-    
-    switch (idx) 
-    {
-    case 0://FCFS
-        cs.SetAlgorithm(Scheduling::FCFS, false, false);
-        break;
-    case 1://SJF
-        cs.SetAlgorithm(Scheduling::SJF, false, false);
-        break;
-    case 2://SRJF
-        cs.SetAlgorithm(Scheduling::FCFS, true, false);
-        break;
-    case 3://RR
-        cs.SetAlgorithm(Scheduling::FCFS, false, true);
-        break;
-    case 4://Non-preemptive Priority
-        cs.SetAlgorithm(Scheduling::Priority, false, false);
-        break;
-    case 5://Preemptive Priority
-        cs.SetAlgorithm(Scheduling::Priority, true, false);
-        break;
-    case 6://Non-preemptive Priority with RR
-        cs.SetAlgorithm(Scheduling::Priority, false, true);
-        break;
-    default://Not selected
-        break;
-            //ï¿½ï¿½ï¿½ï¿½Ã³ï¿½ï¿½
-    }
-
-}
-
-
 
 std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
 {
-    std::unique_ptr<ProcessQueue> pQ = CreateProcessQueue();
-
+    auto pQ = CreateProcessQueue();
+ 
     for (auto i = 0; i + 3 < blockSize; i = i + 4) {
         std::string tempPid = textctrls[i]->GetValue().ToStdString();
         double tempArrivaltime;
@@ -315,8 +263,39 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
         unsigned tempPriority;
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
-        pQ.get()->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
+        pQ->push(Process(tempPid, tempArrivaltime, tempBursttime, tempPriority));
     }
-    return std::move(pQ);
+    return pQ;
 }
 
+
+
+void MyFrame::SetAlgorithmSelection()
+{
+    switch (choiceAlgorithms->GetSelection()) {
+
+    case 0://FCFS
+        scheduler.SetAlgorithm(Scheduling::FCFS, false, false);
+        break;
+    case 1://SJF
+        scheduler.SetAlgorithm(Scheduling::SJF, false, false);
+        break;
+    case 2://SRJF
+        scheduler.SetAlgorithm(Scheduling::SJF, true, false);
+        break;
+    case 3://RR
+        scheduler.SetAlgorithm(Scheduling::FCFS, false, true);
+        break;
+    case 4://Non-preemptive Priority
+        scheduler.SetAlgorithm(Scheduling::Priority, false, false);
+        break;
+    case 5://Preemptive Priority
+        scheduler.SetAlgorithm(Scheduling::Priority, true, false);
+        break;
+    case 6://Non-preemptive Priority with RR
+        scheduler.SetAlgorithm(Scheduling::Priority, false, true);
+        break;
+    default://Not selected
+        break;
+    }
+}
