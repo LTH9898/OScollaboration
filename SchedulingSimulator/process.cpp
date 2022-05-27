@@ -35,9 +35,3 @@ const Process Process::operator+(const double time)
 	temp.burstTime += time;
 	return temp;
 }
-
-
-std::unique_ptr<ProcessQueue> CreateProcessQueue()
-{
-	return std::make_unique<ProcessQueue>(CMP_PROCESS);
-}
