@@ -18,10 +18,11 @@ enum
     BUTTON_CREATE,
     BUTTON_DELETE,
     BUTTON_CLEAR,
-    BUTTON_RUN,
-    BUTTON_STEPRUN,
-    BUTTON_GANTTCLEAR,
     SCROLL_UPPER,
+
+    BITMAPBTN_RUN,
+    BITMAPBTN_STEPRUN,
+    BITMAPBTN_GANTTCLEAR,
 };
 
 
@@ -86,15 +87,15 @@ private:
     // Constants
     enum
     {
+        MAX_PROCESS = 32,
+        SIZEOF_ALGORITHMS = 7,
+
         BAR_SIZE = 35,
         BUTTON_WIDTH = 70,
         BUTTON_HEIGHT = 25,
         TEXT_WIDTH = 95,
         TEXT_HEIGHT = 20,
         TEXTCTRL_WIDTH = 70,
-
-        MAX_PROCESS = 32,
-        SIZEOF_ALGORITHMS = 7
     };
 };
 

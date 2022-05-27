@@ -59,10 +59,15 @@ MyFrame::MyFrame()
 
     choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
-    new wxButton(this, BUTTON_RUN, _T("Run"), wxPoint(200, lowerWindowY + 6), btnSize);
-    new wxButton(this, BUTTON_STEPRUN, _T("StepRun"), wxPoint(200 + BUTTON_WIDTH + 10, lowerWindowY + 6), btnSize);
 
-    new wxButton(this, BUTTON_GANTTCLEAR, _T("GanttClear"), wxPoint(200 + (BUTTON_WIDTH + 10) * 2, lowerWindowY + 6), btnSize);
+    wxSize bitmapBtnSize(BUTTON_HEIGHT, BUTTON_HEIGHT);
+    wxBitmap imgPlay("img\\play.png", wxBitmapType::wxBITMAP_TYPE_PNG);
+    wxBitmap imgNext("img\\next.png", wxBitmapType::wxBITMAP_TYPE_PNG);
+    wxBitmap imgStop("img\\stop.png", wxBitmapType::wxBITMAP_TYPE_PNG);
+    new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
+    new wxBitmapButton(this, BITMAPBTN_STEPRUN, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
+    new wxBitmapButton(this, BITMAPBTN_GANTTCLEAR, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
+
 
     // Event
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
@@ -77,7 +82,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
 
-    Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BUTTON_RUN);
+    Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BITMAPBTN_RUN);
 
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
@@ -241,8 +246,6 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
     if (BAR_SIZE < currentPos.y && currentPos.y < upperScroll->GetPosition().y &&
         !IsPosInRange(currentPos, tqPos, tqPos.y + TEXT_HEIGHT, tqPos.x + TEXT_WIDTH + TEXTCTRL_WIDTH) &&
         !IsPosInRange(currentPos, pbPos, pbPos.y + 4 * TEXT_HEIGHT, pbPos.x + TEXT_WIDTH + blockSize * TEXTCTRL_WIDTH)) {
-
-        SetStatusText(std::to_string(direction));
 
         upperScroll->SetThumbPosition(upperScroll->GetThumbPosition() - direction);
         ScrollUpperWindow();

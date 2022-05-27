@@ -24,7 +24,7 @@ void CpuScheduler::StepForward()
 	if (!wQ.Empty()) {
 
 		// Preemptive
-		if (isPreemptive) {/*
+		if (isPreemptive) {
 			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
@@ -36,18 +36,27 @@ void CpuScheduler::StepForward()
 				delta = pQ->top().GetArrivalTime() - time;
 				wQ.Push(currentProcess - delta);
 			}
-			time += delta;*/
+			time += delta;
 		}
 
 		// Round-Robin
 		else if (isRoundRobin) {
 
-			//
-			//
-			// 
-			//
-			//
-			//
+			currentProcess = wQ.Top();
+
+			if (currentProcess.GetBurstTime() > timeQuantum)
+			{
+				currentProcess -= timeQuantum;
+				time += timeQuantum;
+				wQ.Pop();
+				wQ.Push(currentProcess);
+			}
+			else
+			{
+				time += currentProcess.GetBurstTime();
+				currentProcess.SetBurstTime(0);
+				wQ.Pop();
+			}
 		}
 
 		// Non-preemptive and no time-quantum
