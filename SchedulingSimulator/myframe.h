@@ -22,8 +22,8 @@ enum
     SCROLL_UPPER,
 
     BITMAPBTN_RUN,
-    BITMAPBTN_STEPRUN,
-    BITMAPBTN_GANTTCLEAR,
+    BITMAPBTN_STEP,
+    BITMAPBTN_RESET,
 };
 
 
@@ -46,6 +46,11 @@ private:
     void ClearProcessBlock(wxCommandEvent& event);
     void OnUpperScroll(wxScrollEvent& event)
         { ScrollUpperWindow(); }
+    // Lower window events
+    void RunScheduler(wxCommandEvent& event);
+    void StepScheduler(wxCommandEvent& event);
+    void ResetScheduler(wxCommandEvent& event)
+        { scheduler.Reset(); }
 
     // Main window event
     void OnPaint(wxPaintEvent& event);
@@ -54,17 +59,16 @@ private:
         { previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip(); }
     void OnMotion(wxMouseEvent& event);
 
+
     // Functions
     // Upper window functions
     wxPoint CreateBlockPos(int row, int column);
     void SetUpperScroll();
     void ScrollUpperWindow();
     void DragUpperWindow(const wxPoint& currentPos, int direction);
-
     // Lower window functions
-    void CreateGanttChart(wxCommandEvent& event);
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
-    void SetAlgorithmSelection();
+    bool InitializeScheduler();
     //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
 
 

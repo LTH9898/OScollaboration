@@ -70,30 +70,34 @@ MyFrame::MyFrame()
     imgNext.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
     imgStop.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
     new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
-    new wxBitmapButton(this, BITMAPBTN_STEPRUN, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
-    new wxBitmapButton(this, BITMAPBTN_GANTTCLEAR, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
+    new wxBitmapButton(this, BITMAPBTN_STEP, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
+    new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
 
 
     // Event
+    // File events
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnSaveAs, this, ID_SaveAs);
-
+    // Upper window events
     Bind(wxEVT_BUTTON, &MyFrame::CreateProcessBlock, this, BUTTON_CREATE);
     Bind(wxEVT_BUTTON, &MyFrame::DeleteProcessBlock, this, BUTTON_DELETE);
     Bind(wxEVT_BUTTON, &MyFrame::ClearProcessBlock, this, BUTTON_CLEAR);
-
     Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
     Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnUpperScroll, this, SCROLL_UPPER);
+    // Lower window events
+    Bind(wxEVT_BUTTON, &MyFrame::RunScheduler, this, BITMAPBTN_RUN);
+    Bind(wxEVT_BUTTON, &MyFrame::StepScheduler, this, BITMAPBTN_STEP);
+    Bind(wxEVT_BUTTON, &MyFrame::ResetScheduler, this, BITMAPBTN_RESET);
 
-    Bind(wxEVT_BUTTON, &MyFrame::CreateGanttChart, this, BITMAPBTN_RUN);
-
+    // Main window event
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
     Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
 }
+
 
 
 
@@ -125,6 +129,7 @@ void MyFrame::OnSaveAs(wxCommandEvent& event)
 
 
 
+
 void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
@@ -135,7 +140,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 
     wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
 
-    textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "P" + std::to_string(blockSize),
+    textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "P" + std::to_string(blockSize + 1),
         CreateBlockPos(0, blockSize), ctrlSize, wxBORDER_SIMPLE));
     for (int i = 1; i != 4; i++)
         textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, "0",
@@ -144,7 +149,6 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 
     SetUpperScroll();
 }
-
 
 void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
 {
@@ -172,14 +176,28 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
 }
 
 
-void MyFrame::CreateGanttChart(wxCommandEvent& event)
+
+
+void MyFrame::RunScheduler(wxCommandEvent& event)
 {
-    /*
-    wxPaintDC dc(this);
-    dc.SetPen(*wxTRANSPARENT_PEN);
-    dc.SetBrush(wxColour("#e31919"));
-    dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));*/
+    if (!scheduler.IsRunning())
+        if (InitializeScheduler())
+            scheduler.StepForward();
+
+    while (scheduler.IsRunning())
+        scheduler.StepForward();
 }
+
+void MyFrame::StepScheduler(wxCommandEvent& event)
+{
+    if (!scheduler.IsRunning())
+        if (!InitializeScheduler())
+            return;
+    scheduler.StepForward();
+}
+
+
+
 
 void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method , wxpaitDC의 경우 OnPaint안에서만 수행 가능
 {
@@ -212,6 +230,7 @@ void MyFrame::OnMotion(wxMouseEvent& event) {
         DragUpperWindow(currentPos, direction);
     }
 }
+
 
 
 
@@ -259,6 +278,7 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
 
 
 
+
 std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
 {
     auto pQ = CreateProcessQueue();
@@ -271,39 +291,67 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
         unsigned tempPriority;
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
+
+        tempArrivaltime = 0 ? tempArrivaltime : tempArrivaltime < 0;
+        tempBursttime = 0 ? tempBursttime : tempBursttime < 0;
+
         pQ->emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
     }
     return pQ;
 }
 
-
-
-void MyFrame::SetAlgorithmSelection()
+bool MyFrame::InitializeScheduler()
 {
+    // Set queue and parameter for scheduler
+    scheduler.SetProcessQueue(MakeProcessQueue());
+    double tq;
+    textctrlTQ->GetValue().ToDouble(&tq);
+
     switch (choiceAlgorithms->GetSelection()) {
 
     case 0://FCFS
         scheduler.SetAlgorithm(Scheduling::FCFS, false, false);
         break;
+
     case 1://SJF
         scheduler.SetAlgorithm(Scheduling::SJF, false, false);
         break;
+
     case 2://SRJF
         scheduler.SetAlgorithm(Scheduling::SJF, true, false);
         break;
+
     case 3://RR
+        if (tq <= 0) {
+
+            wxMessageBox("Time quantum must be more than 0");
+            return false;
+        }
         scheduler.SetAlgorithm(Scheduling::FCFS, false, true);
+        scheduler.SetTimeQuantum(tq);
         break;
+
     case 4://Non-preemptive Priority
         scheduler.SetAlgorithm(Scheduling::Priority, false, false);
         break;
+
     case 5://Preemptive Priority
         scheduler.SetAlgorithm(Scheduling::Priority, true, false);
         break;
+
     case 6://Non-preemptive Priority with RR
+        if (tq <= 0) {
+
+            wxMessageBox("Time quantum must be more than 0");
+            return false;
+        }
         scheduler.SetAlgorithm(Scheduling::Priority, false, true);
+        scheduler.SetTimeQuantum(tq);
         break;
+
     default://Not selected
         break;
     }
+
+    return true;
 }

@@ -8,6 +8,12 @@ void CpuScheduler::StepForward()
 
 		if (!pQ)
 			return;
+		// scheduling 종료 조건
+		if (pQ->empty() && wQ.Empty()) {
+
+			pQ = nullptr;
+			return;
+		}
 		wQ.Clear();
 		ganttChart.clear();
 		time = 0;
