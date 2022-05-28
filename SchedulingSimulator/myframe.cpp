@@ -2,13 +2,14 @@
 
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0)
+    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0)
 {
     // MyFrame 초기화
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
     wxInitAllImageHandlers();
+    InitColorTable();
 
 
     // 상단 메뉴바
@@ -46,6 +47,8 @@ MyFrame::MyFrame()
 
     // 하단 window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
+    wqY = lowerWindowY + 70 + CHART_HEIGHT + 35;
+
     // schedular 선택
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
@@ -60,6 +63,7 @@ MyFrame::MyFrame()
 
     choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
         wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
+    choiceAlgorithms->SetSelection(0);
     
     auto path = wxStandardPaths::Get().GetDataDir();
     wxSize bitmapBtnSize(BUTTON_HEIGHT, BUTTON_HEIGHT);
@@ -181,19 +185,27 @@ void MyFrame::ClearProcessBlock(wxCommandEvent& event)
 void MyFrame::RunScheduler(wxCommandEvent& event)
 {
     if (!scheduler.IsRunning())
-        if (InitializeScheduler())
+        if (InitScheduler())
             scheduler.StepForward();
 
     while (scheduler.IsRunning())
         scheduler.StepForward();
+
+    SetChartArea();
+    Refresh();
+    Update();
 }
 
 void MyFrame::StepScheduler(wxCommandEvent& event)
 {
     if (!scheduler.IsRunning())
-        if (!InitializeScheduler())
+        if (!InitScheduler())
             return;
     scheduler.StepForward();
+
+    SetChartArea();
+    Refresh();
+    Update();
 }
 
 
@@ -205,8 +217,63 @@ void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method , w
     wxPaintDC dc(this);
     dc.SetPen(*wxTRANSPARENT_PEN);
     dc.SetBrush(wxColour("#A4A4A4"));
-    dc.DrawRectangle(wxRect(0, 0, size.GetX(), BAR_SIZE));
-    dc.DrawRectangle(wxRect(0, lowerWindowY, size.GetX(), BAR_SIZE));
+    dc.DrawRectangle(0, 0, size.GetX(), BAR_SIZE);
+    dc.DrawRectangle(0, lowerWindowY, size.GetX(), BAR_SIZE);
+    
+    // If ganttchart is not empty, draw ganttchart
+    auto &gantt = scheduler.GetGantthandler();
+    if (!gantt.empty()) {
+
+        dc.DrawText("Gantt chart", 20, lowerWindowY + 50);
+        int i = 0;
+        int x = lowerWindowX + 20;
+        int y = lowerWindowY + 70;
+        dc.SetPen(*wxBLACK_PEN);
+
+        for (auto elem : gantt) {
+
+            dc.SetBrush(wxColour(colorList[elem.first]));
+            dc.DrawRectangle(x + chartX[i], y, chartWidth[i], CHART_HEIGHT);
+
+            dc.DrawText(wxString::FromDouble(elem.second, 1), x + timeX[i], y + CHART_HEIGHT);
+            dc.DrawText(elem.first != "" ? elem.first : "IDLE", x + pidX[i], y + 11);
+            i++;
+        }
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.SetBrush(GetBackgroundColour());
+        dc.DrawRectangle(x + chartEnd, y, size.GetX() - (x + chartEnd), CHART_HEIGHT);
+
+
+        // Draw separator
+        dc.SetPen(*wxBLACK_PEN);
+        dc.SetBrush(*wxBLACK_BRUSH);
+        dc.DrawRectangle(0, wqY - 2, size.GetX(), 2);
+
+
+        // Draw waiting queue
+        dc.DrawText("Waiting queue", 20, wqY + 15);
+        i = 0;
+        x = wqX + 20;
+        y = wqY + 35;
+        
+        for (auto& elem : scheduler.GetWQhandler().GetWaitingQueue()) {
+
+            std::string pid(elem.GetPid());
+            dc.SetBrush(wxColour(colorList[pid]));
+            dc.DrawRectangle(x + CHART_HEIGHT * i, y, CHART_HEIGHT, CHART_HEIGHT);
+
+            pid = pid != "" ? pid : "IDLE";
+            int space = (CHART_HEIGHT - GetTextExtent(pid).GetWidth()) / 2;
+            space = space >= 1 ? space : 1;
+            dc.DrawText(pid, x + CHART_HEIGHT * i + space, y + 11);
+            i++;
+        }
+        wqEnd = CHART_HEIGHT * i;
+
+        dc.SetPen(*wxTRANSPARENT_PEN);
+        dc.SetBrush(GetBackgroundColour());
+        dc.DrawRectangle(x + wqEnd, y, size.GetX() - (x + wqEnd), CHART_HEIGHT);
+    }
 }
 
 void MyFrame::OnWindowSize(wxSizeEvent& event)
@@ -282,8 +349,9 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
 std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
 {
     auto pQ = CreateProcessQueue();
+    pidList.clear();
  
-    for (auto i = 0; i + 3 < blockSize; i = i + 4) {
+    for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
         std::string tempPid = textctrls[i]->GetValue().ToStdString();
         double tempArrivaltime;
         textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
@@ -292,15 +360,18 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         unsigned tempPriority;
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
 
-        tempArrivaltime = 0 ? tempArrivaltime : tempArrivaltime < 0;
-        tempBursttime = 0 ? tempBursttime : tempBursttime < 0;
+        tempArrivaltime = tempArrivaltime < 0 ? 0 : tempArrivaltime;
+        textctrls[i + 1]->SetValue(wxString::FromDouble(tempArrivaltime));
+        tempBursttime = tempBursttime < 0 ? 0 : tempBursttime;
+        textctrls[i + 2]->SetValue(wxString::FromDouble(tempBursttime));
 
         pQ->emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
+        pidList.push_back(tempPid);
     }
     return pQ;
 }
 
-bool MyFrame::InitializeScheduler()
+bool MyFrame::InitScheduler()       // 중복되는 PID 검사를 추가해야 함
 {
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
@@ -353,5 +424,79 @@ bool MyFrame::InitializeScheduler()
         break;
     }
 
+    // process queue의 PID마다 color code 할당
+    AllocateColor();
     return true;
+}
+
+void MyFrame::InitColorTable()
+{
+    for (int i = 0; i != TABLE_NUM; i++) {
+
+        for (int j = 0; j != TABLE_NUM; j++) {
+            
+            for (int k = 0; k != TABLE_NUM; k++) {
+                
+                colorTable[i * TABLE_NUM * TABLE_NUM + j * TABLE_NUM + k][0] = CODE_BASE + i; // R
+                colorTable[i * TABLE_NUM * TABLE_NUM + j * TABLE_NUM + k][1] = CODE_BASE + j; // G
+                colorTable[i * TABLE_NUM * TABLE_NUM + j * TABLE_NUM + k][2] = CODE_BASE + k; // B
+            }
+        }
+    }
+}
+
+void MyFrame::AllocateColor()
+{
+    colorList.clear();
+
+    // generate random index of colorTable
+    int idx[TABLE_NUM * TABLE_NUM * TABLE_NUM - 1];
+    for (int i = 0; i != TABLE_NUM * TABLE_NUM * TABLE_NUM - 1; i++)
+        idx[i] = i;
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(idx, idx + TABLE_NUM * TABLE_NUM * TABLE_NUM - 1, g);
+
+    // Allocate color
+    char str[] = "#FFFFFF";
+    for (int i = 0; i != blockSize; i++) {
+
+        str[1] = colorTable[idx[i]][0]; // R
+        str[3] = colorTable[idx[i]][1]; // G
+        str[5] = colorTable[idx[i]][2]; // B
+
+        colorList.emplace(pidList[i], str);
+    }
+    // if IDLE, draw white
+    colorList.emplace("", "#FFFFFF");
+}
+
+void MyFrame::SetChartArea()
+{
+    chartX.clear();
+    chartWidth.clear();
+    timeX.clear();
+    pidX.clear();
+    int prevX = 0;
+
+    // Set Gantt chart area
+    for (auto& elem : scheduler.GetGantthandler()) {
+
+        double length = elem.second * (double)UNIT_CHART;
+        int newX = (int)(length + 0.5);
+        int width = newX - prevX;
+
+        chartX.push_back(prevX);
+        chartWidth.push_back(width);
+        timeX.push_back(newX - GetTextExtent(wxString::FromDouble(elem.second, 1)).GetWidth() / 2);
+        
+        // pid를 가운데 정렬
+        int pidWidth = GetTextExtent(elem.first != "" ? elem.first : "IDLE").GetWidth();
+        int space = (width - pidWidth) / 2;
+        pidX.push_back(prevX + (space >= 1 ? space : 1));
+
+        prevX = newX;
+    }
+    chartEnd = prevX;
 }

@@ -6,6 +6,9 @@
 #endif
 #include <wx/wfstream.h>
 #include <wx/stdpaths.h>
+#include <algorithm>
+#include <random>
+#include <map>
 #include "cpu_scheduler.h"
 
 
@@ -50,7 +53,7 @@ private:
     void RunScheduler(wxCommandEvent& event);
     void StepScheduler(wxCommandEvent& event);
     void ResetScheduler(wxCommandEvent& event)
-        { scheduler.Reset(); }
+        { scheduler.Reset(); Refresh(); Update(); }
 
     // Main window event
     void OnPaint(wxPaintEvent& event);
@@ -68,7 +71,10 @@ private:
     void DragUpperWindow(const wxPoint& currentPos, int direction);
     // Lower window functions
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
-    bool InitializeScheduler();
+    bool InitScheduler();
+    void InitColorTable();
+    void AllocateColor();
+    void SetChartArea();
     //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
 
 
@@ -82,9 +88,23 @@ private:
     wxChoice* choiceAlgorithms;
 
     CpuScheduler scheduler;
+#define TABLE_NUM 6
+#define CODE_BASE 'A'
+    char colorTable[TABLE_NUM * TABLE_NUM * TABLE_NUM][3];
+    std::vector<std::string> pidList;
+    std::map<std::string, std::string> colorList;
+    std::vector<int> chartX;
+    std::vector<int> chartWidth;
+    std::vector<int> timeX;
+    std::vector<int> pidX;
 
     int blockSize;
+    int lowerWindowX;
     int lowerWindowY;
+    int chartEnd;
+    int wqX;
+    int wqY;
+    int wqEnd;
 
     wxClientDC _m_clntDC;
     wxPoint previousPos;
@@ -101,6 +121,9 @@ private:
         TEXT_WIDTH = 95,
         TEXT_HEIGHT = 20,
         TEXTCTRL_WIDTH = 70,
+
+        CHART_HEIGHT = 40,
+        UNIT_CHART = 30
     };
 };
 

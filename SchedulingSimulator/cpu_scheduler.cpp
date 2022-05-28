@@ -20,11 +20,6 @@ void CpuScheduler::StepForward()
 		isRunning = true;
 	}
 
-	// 현재 시간 전에 도착한 프로세스들을 processQueue에서 waitingQueue로 이동
-	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
-		wQ.Push(pQ->top());
-		pQ->pop();
-	}
 
 	// Dispatch process from waitingQueue to CPU
 	if (!wQ.Empty()) {
@@ -80,8 +75,24 @@ void CpuScheduler::StepForward()
 		time = pQ->top().GetArrivalTime();
 	}
 
+	// 현재 시간 전에 도착한 프로세스들을 processQueue에서 waitingQueue로 이동
+	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
+		wQ.Push(pQ->top());
+		pQ->pop();
+	}
+
+
 	// ganttChart에 기록
-	ganttChart.emplace_back(currentProcess.GetPid(), time);
+	if (ganttChart.empty())
+		ganttChart.emplace_back(currentProcess.GetPid(), time);
+	else {
+
+		if (ganttChart.rbegin()->first == currentProcess.GetPid())
+			ganttChart.rbegin()->second = time;
+		else
+			ganttChart.emplace_back(currentProcess.GetPid(), time);
+	}
+	
 	// scheduling 종료 조건
 	if (pQ->empty() && wQ.Empty()) {
 
