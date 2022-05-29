@@ -32,6 +32,7 @@ MyFrame::MyFrame()
 
 
     // 프로세스 입력 창
+
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
@@ -43,6 +44,7 @@ MyFrame::MyFrame()
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
     // Create Scrollbar for upper window
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
+   
 
 
     // 하단 window
@@ -78,6 +80,9 @@ MyFrame::MyFrame()
     new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
 
 
+
+
+
     // Event
     // File events
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
@@ -100,6 +105,9 @@ MyFrame::MyFrame()
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
     Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
+
+    //
+    DrawGantChart();
 }
 
 
@@ -195,7 +203,6 @@ void MyFrame::RunScheduler(wxCommandEvent& event)
     Refresh();
     Update();
 }
-
 
 void MyFrame::StepScheduler(wxCommandEvent& event)
 {
@@ -499,3 +506,29 @@ void MyFrame::SetChartArea()
     }
     chartEnd = prevX;
 }
+
+void MyFrame::DrawGantChart() {
+    
+    
+    //std::list<std::pair<std::string, int>> GantChart = cs.GetGantthandler;
+
+
+    //임시 GantChart 
+    std::list<std::pair<std::string, int>> tempGant;
+    std::list<std::pair<std::string, int>>::iterator it;
+
+    for (int i = 1; i < 8; i++) {
+        tempGant.push_back(make_pair("Pid " + std::to_string(i), i));
+    }
+
+
+    long style = wxALIGN_CENTER | wxBORDER_SIMPLE;
+    int Xpos = 10;
+    int Ypos = 360;
+    int SecSize = 30;
+    for (it = tempGant.begin(); it != tempGant.end(); it++) {
+       gant.emplace_back(new wxStaticText(this, wxID_ANY, it->first.c_str(), wxPoint(Xpos, Ypos), wxSize(SecSize * it->second, TEXT_HEIGHT * 2), style));
+       Xpos += (SecSize * it->second);
+    }
+}
+
