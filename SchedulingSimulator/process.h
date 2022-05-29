@@ -5,7 +5,6 @@
 #include <list>
 #include <memory>
 
-
 class Process
 {
 public:
@@ -28,32 +27,32 @@ public:
 
 	Process& operator=(const Process& rhs);
 
-	// ÇÁ·Î¼¼½º °´Ã¼¿Í 'double'ÀÇ ¿¬»êÀÚ·Î ¼­ºñ½º½Ã°£À» °¨¼Ò
-	// ¿¹) Process P1 ( burstTime = 10 )
+	// í”„ë¡œì„¸ìŠ¤ ê°ì²´ì™€ 'double'ì˜ ì—°ì‚°ìë¡œ ì„œë¹„ìŠ¤ì‹œê°„ì„ ê°ì†Œ
+	// ì˜ˆ) Process P1 ( burstTime = 10 )
 	//     P1 -= 3
-	// °á°ú) P1 ( burstTime = 7 )
+	// ê²°ê³¼) P1 ( burstTime = 7 )
 	Process& operator-=(const double time);
 	Process& operator+=(const double time);
 	const Process operator-(const double time);
 	const Process operator+(const double time);
 
 private:
-	std::string pid;		// ÇÁ·Î¼¼½º ID
-	double arrivalTime;		// µµÂø½Ã°£
-	double burstTime;		// ¼­ºñ½º½Ã°£
-	unsigned priority;		// ¿ì¼±¼øÀ§
+	std::string pid;		// í”„ë¡œì„¸ìŠ¤ ID
+	double arrivalTime;		// ë„ì°©ì‹œê°„
+	double burstTime;		// ì„œë¹„ìŠ¤ì‹œê°„
+	unsigned priority;		// ìš°ì„ ìˆœìœ„
 };
 
 
 auto CMP_PROCESS = [](const Process& lhs, const Process& rhs) { return lhs.GetArrivalTime() > rhs.GetArrivalTime(); };
 
-// µµÂø ½Ã°£ÀÌ °¡Àå ÀÛÀº ÇÁ·Î¼¼½º°¡ °¡Àå ³ôÀº ¿ì¼±¼øÀ§¸¦ °®´Â ÇÁ·Î¼¼½º Å¥
+// ë„ì°© ì‹œê°„ì´ ê°€ì¥ ì‘ì€ í”„ë¡œì„¸ìŠ¤ê°€ ê°€ì¥ ë†’ì€ ìš°ì„ ìˆœìœ„ë¥¼ ê°–ëŠ” í”„ë¡œì„¸ìŠ¤ í
 using ProcessQueue = std::priority_queue<Process, std::vector<Process>, decltype(CMP_PROCESS)>;
-// ÇÁ·Î¼¼½º Å¥ »ı¼º
+// í”„ë¡œì„¸ìŠ¤ í ìƒì„± í•¨ìˆ˜
 std::unique_ptr<ProcessQueue> CreateProcessQueue()
 	{ return std::make_unique<ProcessQueue>(CMP_PROCESS); }
 
-// °£Æ® Â÷Æ®¿¡ ÇÁ·Î¼¼½º ID¿Í ±× ÇÁ·Î¼¼½ºÀÇ Á¾·á ½ÃÁ¡À» ±â·Ï
+// ê°„íŠ¸ ì°¨íŠ¸ì— í”„ë¡œì„¸ìŠ¤ IDì™€ ê·¸ í”„ë¡œì„¸ìŠ¤ì˜ ì¢…ë£Œ ì‹œì ì„ ê¸°ë¡
 using GanttChart = std::list<std::pair<std::string, double>>;
 
 #endif

@@ -3,52 +3,93 @@
 
 void CpuScheduler::StepForward()
 {
-	// CPU scheduler ÃÊ±âÈ­
+	// CPU scheduler ì´ˆê¸°í™”
 	if (!isRunning) {
 
 		if (!pQ)
 			return;
+		// scheduling ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+		if (pQ->empty() && wQ.Empty()) {
+
+			pQ = nullptr;
+			return;
+		}
 		wQ.Clear();
 		ganttChart.clear();
 		time = 0;
 		isRunning = true;
 	}
 
-	// ÇöÀç ½Ã°£ Àü¿¡ µµÂøÇÑ ÇÁ·Î¼¼½ºµéÀ» processQueue¿¡¼­ waitingQueue·Î ÀÌµ¿
+
+	// í˜„ìž¬ ì‹œê°„ ì „ì— ë„ì°©í•œ í”„ë¡œì„¸ìŠ¤ë“¤ì„ processQueueì—ì„œ waitingQueueë¡œ ì´ë™
 	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
 		wQ.Push(pQ->top());
 		pQ->pop();
 	}
 
+
 	// Dispatch process from waitingQueue to CPU
 	if (!wQ.Empty()) {
 
 		// Preemptive
-		if (isPreemptive) {/*
+
+		if (isPreemptive) {
 			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
+			double delta;
+			double curBurstT = currentProcess.GetBurstTime();
 
-			if(pQ->empty() || pQ->top().GetArrivalTime() - time > currentProcess.GetBurstTime()){
+			if (wQ.GetAlgorithm() == Scheduling::SJF) {
+				while (!pQ->empty()
+					&& pQ->top().GetBurstTime() >= currentProcess.GetBurstTime()
+					&& pQ->top().GetArrivalTime() - time <= curBurstT) {
+					wQ.Push(pQ->top());
+					pQ->pop();
+				}
+			}
+			else { //Priority
+				while (!pQ->empty()
+					&& pQ->top().GetPriority() >= currentProcess.GetPriority()
+					&& pQ->top().GetArrivalTime() - time <= curBurstT) {
+					wQ.Push(pQ->top());
+					pQ->pop();
+				}
+			}
+
+			if (pQ->empty() || pQ->top().GetArrivalTime() - time > currentProcess.GetBurstTime()) {
 				delta = currentProcess.GetBurstTime();
 			}
 			else {
 				delta = pQ->top().GetArrivalTime() - time;
 				wQ.Push(currentProcess - delta);
 			}
-			time += delta;*/
+
+			time += delta;
 		}
 
-		// Round-Robin
-		else if (isRoundRobin) {
+        // Round-Robin
+        else if (isRoundRobin) {
+            currentProcess = wQ.Top();
+            if (currentProcess.GetBurstTime() > timeQuantum)
+            {
+                currentProcess.SetBurstTime(currentProcess.GetBurstTime() - timeQuantum);
+                time += timeQuantum;
+                wQ.Pop();
+                while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
+                    wQ.Push(pQ->top());
+                    pQ->pop();
+                }
 
-			//
-			//
-			// 
-			//
-			//
-			//
-		}
+                wQ.Push(currentProcess);
+            }
+            else
+            {
+                time += currentProcess.GetBurstTime();
+                currentProcess.SetBurstTime(0);
+                wQ.Pop();
+            }
+        }
 
 		// Non-preemptive and no time-quantum
 		else {
@@ -65,9 +106,29 @@ void CpuScheduler::StepForward()
 		time = pQ->top().GetArrivalTime();
 	}
 
-	// ganttChart¿¡ ±â·Ï
+
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ processQueueï¿½ï¿½ï¿½ï¿½ waitingQueueï¿½ï¿½ ï¿½Ìµï¿½
+	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
+		wQ.Push(pQ->top());
+		pQ->pop();
+	}
+
+
+	// ganttChartï¿½ï¿½ ï¿½ï¿½ï¿½
+	if (ganttChart.empty())
+		ganttChart.emplace_back(currentProcess.GetPid(), time);
+	else {
+
+		if (ganttChart.rbegin()->first == currentProcess.GetPid())
+			ganttChart.rbegin()->second = time;
+		else
+			ganttChart.emplace_back(currentProcess.GetPid(), time);
+	}
+	
+	// scheduling ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+	// ganttChartì— ê¸°ë¡
 	ganttChart.emplace_back(currentProcess.GetPid(), time);
-	// scheduling Á¾·á Á¶°Ç
+	// scheduling ì¢…ë£Œ ì¡°ê±´
 	if (pQ->empty() && wQ.Empty()) {
 
 		isRunning = false;
