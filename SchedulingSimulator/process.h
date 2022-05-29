@@ -49,7 +49,7 @@ auto CMP_PROCESS = [](const Process& lhs, const Process& rhs) { return lhs.GetAr
 
 // 도착 시간이 가장 작은 프로세스가 가장 높은 우선순위를 갖는 프로세스 큐
 using ProcessQueue = std::priority_queue<Process, std::vector<Process>, decltype(CMP_PROCESS)>;
-// 프로세스 큐 생성 함수
+// 프로세스 큐 생성
 std::unique_ptr<ProcessQueue> CreateProcessQueue()
 	{ return std::make_unique<ProcessQueue>(CMP_PROCESS); }
 
