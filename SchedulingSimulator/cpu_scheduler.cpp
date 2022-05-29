@@ -41,15 +41,13 @@ void CpuScheduler::StepForward()
 
         // Round-Robin
         else if (isRoundRobin) {
-            
-            currentProcess = wQ.Top();
 
+            currentProcess = wQ.Top();
             if (currentProcess.GetBurstTime() > timeQuantum)
             {
                 currentProcess.SetBurstTime(currentProcess.GetBurstTime() - timeQuantum);
                 time += timeQuantum;
                 wQ.Pop();
-
                 while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
                     wQ.Push(pQ->top());
                     pQ->pop();
