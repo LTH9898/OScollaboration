@@ -4,32 +4,32 @@
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0)
 {
-    // MyFrame ÃÊ±âÈ­
+    // MyFrame ì´ˆê¸°í™”
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
 
 
-    // »ó´Ü ¸Ş´º¹Ù
+    // ìƒë‹¨ ë©”ë‰´ë°”
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Open, _T("&¿­±â\tCtrl-O"));
-    menuFile->Append(ID_Save, _T("&ÀúÀå\tCtrl-S"));
-    menuFile->Append(ID_SaveAs, _T("&´Ù¸¥ ÀÌ¸§À¸·Î ÀúÀå\tCtrl-Shift-S"));
+    menuFile->Append(ID_Open, _T("&ì—´ê¸°\tCtrl-O"));
+    menuFile->Append(ID_Save, _T("&ì €ì¥\tCtrl-S"));
+    menuFile->Append(ID_SaveAs, _T("&ë‹¤ë¥¸ ì´ë¦„ìœ¼ë¡œ ì €ì¥\tCtrl-Shift-S"));
 
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, _T("&ÆÄÀÏ"));
+    menuBar->Append(menuFile, _T("&íŒŒì¼"));
     SetMenuBar(menuBar);
 
 
-    // »ó´Ü window
-    // ÇÁ·Î¼¼½º °ü¸® ¹öÆ°
+    // ìƒë‹¨ window
+    // í”„ë¡œì„¸ìŠ¤ ê´€ë¦¬ ë²„íŠ¼
     wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
     new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2 * BUTTON_WIDTH, 5), btnSize);
 
 
-    // ÇÁ·Î¼¼½º ÀÔ·Â Ã¢
+    // í”„ë¡œì„¸ìŠ¤ ì…ë ¥ ì°½
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
@@ -43,9 +43,9 @@ MyFrame::MyFrame()
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
 
 
-    // ÇÏ´Ü window
+    // í•˜ë‹¨ window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
-    // schedular ¼±ÅÃ
+    // schedular ì„ íƒ
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
@@ -119,7 +119,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
 
-        wxMessageBox(_T("ÇÁ·Î¼¼½ºÀÇ ÃÖ´ë »ı¼º °³¼ö¸¦ ÃÊ°úÇÏ¿´½À´Ï´Ù"));
+        wxMessageBox(_T("í”„ë¡œì„¸ìŠ¤ì˜ ìµœëŒ€ ìƒì„± ê°œìˆ˜ë¥¼ ì´ˆê³¼í•˜ì˜€ìŠµë‹ˆë‹¤"));
         return;
     }
 
@@ -171,7 +171,7 @@ void MyFrame::CreateGanttChart(wxCommandEvent& event)
     dc.DrawRectangle(wxRect(0, lowerWindowY, 10, 10));*/
 }
 
-void MyFrame::OnPaint(wxPaintEvent& event) // À§¾Æ·¡ ³ª´©´Â bar±×¸®´Â method , wxpaitDCÀÇ °æ¿ì OnPaint¾È¿¡¼­¸¸ ¼öÇà °¡´É
+void MyFrame::OnPaint(wxPaintEvent& event) // ìœ„ì•„ë˜ ë‚˜ëˆ„ëŠ” barê·¸ë¦¬ëŠ” method , wxpaitDCì˜ ê²½ìš° OnPaintì•ˆì—ì„œë§Œ ìˆ˜í–‰ ê°€ëŠ¥
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);

@@ -26,7 +26,7 @@ void waitingQueue::SJF(const Process& newProcess)
 			return;
 		}
 	}
-	data.push_back(newProcess); // ¸¸¾à for¹® ´Ù µ¹¾Ò´Âµ¥ burstTime BurstTimeÀÌ ´õ ÀÛÀº°Ô ¾ø´Â °æ¿ì
+	data.push_back(newProcess); // ë§Œì•½ forë¬¸ ë‹¤ ëŒì•˜ëŠ”ë° burstTime BurstTimeì´ ë” ì‘ì€ê²Œ ì—†ëŠ” ê²½ìš°
 }
 
 void waitingQueue::Priority(const Process& newProcess)
