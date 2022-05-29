@@ -15,10 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="myframe.cpp">
+    <ClCompile Include="cpu_scheduler.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="myframe.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="process.cpp">
@@ -27,15 +30,12 @@
     <ClCompile Include="waiting_queue.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="cpu_scheduler.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="myframe.h">
+    <ClInclude Include="cpu_scheduler.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="cpu_scheduler.h">
+    <ClInclude Include="myframe.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="process.h">

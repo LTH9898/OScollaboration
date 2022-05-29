@@ -5,6 +5,10 @@
 #include <wx/wx.h>
 #endif
 #include <wx/wfstream.h>
+#include <wx/stdpaths.h>
+#include <algorithm>
+#include <random>
+#include <map>
 #include "cpu_scheduler.h"
 
 
@@ -18,11 +22,11 @@ enum
     BUTTON_CREATE,
     BUTTON_DELETE,
     BUTTON_CLEAR,
-    BUTTON_CONFIRM,
-    BUTTON_RUN,
-    BUTTON_STEPRUN,
-    BUTTON_GANTTCLEAR,
     SCROLL_UPPER,
+
+    BITMAPBTN_RUN,
+    BITMAPBTN_STEP,
+    BITMAPBTN_RESET,
 };
 
 
@@ -44,21 +48,20 @@ private:
     void DeleteProcessBlock(wxCommandEvent& event);
     void ClearProcessBlock(wxCommandEvent& event);
     void OnUpperScroll(wxScrollEvent& event)
-
-
-    {
-        ScrollUpperWindow();
-    }
-    void ConFirmProcessBlock(wxCommandEvent& event);
+        { ScrollUpperWindow(); }
+    // Lower window events
+    void RunScheduler(wxCommandEvent& event);
+    void StepScheduler(wxCommandEvent& event);
+    void ResetScheduler(wxCommandEvent& event)
+        { scheduler.Reset(); Refresh(); Update(); }
 
     // Main window event
     void OnPaint(wxPaintEvent& event);
     void OnWindowSize(wxSizeEvent& event);
     void OnLeftDown(wxMouseEvent& event)
-    {
-        previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip();
-    }
+        { previousPos = event.GetLogicalPosition(_m_clntDC); event.Skip(); }
     void OnMotion(wxMouseEvent& event);
+
 
     // Functions
     // Upper window functions
@@ -66,11 +69,13 @@ private:
     void SetUpperScroll();
     void ScrollUpperWindow();
     void DragUpperWindow(const wxPoint& currentPos, int direction);
-    void GetSelectedAlgorithm();
-
 
     // Lower window functions
-    void CreateGanttChart(wxCommandEvent& event);
+    std::unique_ptr<ProcessQueue> MakeProcessQueue();
+    bool InitScheduler();
+    void InitColorTable();
+    void AllocateColor();
+    void SetChartArea();
     //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
 
 
@@ -92,11 +97,27 @@ private:
     wxChoice* choiceAlgorithms;
 
 
+
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
+    CpuScheduler scheduler;
+    
+#define TABLE_NUM 6
+#define CODE_BASE 'A'
+    char colorTable[TABLE_NUM * TABLE_NUM * TABLE_NUM][3];
+    std::vector<std::string> pidList;
+    std::map<std::string, std::string> colorList;
+    std::vector<int> chartX;
+    std::vector<int> chartWidth;
+    std::vector<int> timeX;
+    std::vector<int> pidX;
 
     int blockSize;
-
+    int lowerWindowX;
     int lowerWindowY;
+    int chartEnd;
+    int wqX;
+    int wqY;
+    int wqEnd;
 
     wxClientDC _m_clntDC;
     wxPoint previousPos;
@@ -104,6 +125,9 @@ private:
     // Constants
     enum
     {
+        MAX_PROCESS = 32,
+        SIZEOF_ALGORITHMS = 7,
+
         BAR_SIZE = 35,
         BUTTON_WIDTH = 70,
         BUTTON_HEIGHT = 25,
@@ -111,8 +135,8 @@ private:
         TEXT_HEIGHT = 20,
         TEXTCTRL_WIDTH = 70,
 
-        MAX_PROCESS = 32,
-        SIZEOF_ALGORITHMS = 7
+        CHART_HEIGHT = 40,
+        UNIT_CHART = 30
     };
 };
 
