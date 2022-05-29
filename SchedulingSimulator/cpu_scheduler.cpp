@@ -8,11 +8,18 @@ void CpuScheduler::StepForward()
 
 		if (!pQ)
 			return;
+		// scheduling ��� ���
+		if (pQ->empty() && wQ.Empty()) {
+
+			pQ = nullptr;
+			return;
+		}
 		wQ.Clear();
 		ganttChart.clear();
 		time = 0;
 		isRunning = true;
 	}
+
 
 	// 현재 시간 전에 도착한 프로세스들을 processQueue에서 waitingQueue로 이동
 	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
@@ -20,11 +27,12 @@ void CpuScheduler::StepForward()
 		pQ->pop();
 	}
 
+
 	// Dispatch process from waitingQueue to CPU
 	if (!wQ.Empty()) {
 
 		// Preemptive
-		if (isPreemptive) {/*
+		if (isPreemptive) {
 			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
@@ -36,12 +44,11 @@ void CpuScheduler::StepForward()
 				delta = pQ->top().GetArrivalTime() - time;
 				wQ.Push(currentProcess - delta);
 			}
-			time += delta;*/
+			time += delta;
 		}
 
         // Round-Robin
         else if (isRoundRobin) {
-
             currentProcess = wQ.Top();
             if (currentProcess.GetBurstTime() > timeQuantum)
             {
@@ -78,6 +85,26 @@ void CpuScheduler::StepForward()
 		time = pQ->top().GetArrivalTime();
 	}
 
+
+	// ���� �ð� �� ������ ��μ������ processQueue���� waitingQueue�� �̵�
+	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
+		wQ.Push(pQ->top());
+		pQ->pop();
+	}
+
+
+	// ganttChart�� ���
+	if (ganttChart.empty())
+		ganttChart.emplace_back(currentProcess.GetPid(), time);
+	else {
+
+		if (ganttChart.rbegin()->first == currentProcess.GetPid())
+			ganttChart.rbegin()->second = time;
+		else
+			ganttChart.emplace_back(currentProcess.GetPid(), time);
+	}
+	
+	// scheduling ��� ���
 	// ganttChart에 기록
 	ganttChart.emplace_back(currentProcess.GetPid(), time);
 	// scheduling 종료 조건
