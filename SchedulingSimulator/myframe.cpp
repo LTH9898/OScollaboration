@@ -4,7 +4,7 @@
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0)
 {
-    // MyFrame ÃÊ±âÈ­
+    // MyFrame ì´ˆê¸°í™”
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
@@ -12,26 +12,26 @@ MyFrame::MyFrame()
     InitColorTable();
 
 
-    // »ó´Ü ¸Ş´º¹Ù
+    // ìƒë‹¨ ë©”ë‰´ë°”
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Open, _T("&¿­±â\tCtrl-O"));
-    menuFile->Append(ID_Save, _T("&ÀúÀå\tCtrl-S"));
-    menuFile->Append(ID_SaveAs, _T("&´Ù¸¥ ÀÌ¸§À¸·Î ÀúÀå\tCtrl-Shift-S"));
+    menuFile->Append(ID_Open, _T("&ì—´ê¸°\tCtrl-O"));
+    menuFile->Append(ID_Save, _T("&ì €ì¥\tCtrl-S"));
+    menuFile->Append(ID_SaveAs, _T("&ë‹¤ë¥¸ ì´ë¦„ìœ¼ë¡œ ì €ì¥\tCtrl-Shift-S"));
 
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, _T("&ÆÄÀÏ"));
+    menuBar->Append(menuFile, _T("&íŒŒì¼"));
     SetMenuBar(menuBar);
 
 
-    // »ó´Ü window
-    // ÇÁ·Î¼¼½º °ü¸® ¹öÆ°
+    // ìƒë‹¨ window
+    // í”„ë¡œì„¸ìŠ¤ ê´€ë¦¬ ë²„íŠ¼
     wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
     new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2 * BUTTON_WIDTH, 5), btnSize);
 
 
-    // ÇÁ·Î¼¼½º ÀÔ·Â Ã¢
+    // í”„ë¡œì„¸ìŠ¤ ì…ë ¥ ì°½
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
@@ -45,11 +45,11 @@ MyFrame::MyFrame()
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
 
 
-    // ÇÏ´Ü window
+    // í•˜ë‹¨ window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
     wqY = lowerWindowY + 70 + CHART_HEIGHT + 35;
 
-    // schedular ¼±ÅÃ
+    // schedular ï¿½ï¿½ï¿½ï¿½
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
@@ -138,7 +138,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
 
-        wxMessageBox(_T("ÇÁ·Î¼¼½ºÀÇ ÃÖ´ë »ı¼º °³¼ö¸¦ ÃÊ°úÇÏ¿´½À´Ï´Ù"));
+        wxMessageBox(_T("í”„ë¡œì„¸ìŠ¤ì˜ ìµœëŒ€ ìƒì„± ê°œìˆ˜ë¥¼ ì´ˆê³¼í•˜ì˜€ìŠµë‹ˆë‹¤"));
         return;
     }
 
@@ -196,6 +196,7 @@ void MyFrame::RunScheduler(wxCommandEvent& event)
     Update();
 }
 
+
 void MyFrame::StepScheduler(wxCommandEvent& event)
 {
     if (!scheduler.IsRunning())
@@ -208,10 +209,8 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     Update();
 }
 
+void MyFrame::OnPaint(wxPaintEvent& event) // ìœ„ì•„ë˜ ë‚˜ëˆ„ëŠ” barê·¸ë¦¬ëŠ” method , wxpaitDCì˜ ê²½ìš° OnPaintì•ˆì—ì„œë§Œ ìˆ˜í–‰ ê°€ëŠ¥
 
-
-
-void MyFrame::OnPaint(wxPaintEvent& event) // À§¾Æ·¡ ³ª´©´Â bar±×¸®´Â method , wxpaitDCÀÇ °æ¿ì OnPaint¾È¿¡¼­¸¸ ¼öÇà °¡´É
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);
@@ -371,7 +370,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
     return pQ;
 }
 
-bool MyFrame::InitScheduler()       // Áßº¹µÇ´Â PID °Ë»ç¸¦ Ãß°¡ÇØ¾ß ÇÔ
+bool MyFrame::InitScheduler()       // ï¿½ßºï¿½ï¿½Ç´ï¿½ PID ï¿½Ë»ç¸¦ ï¿½ß°ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½
 {
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
@@ -424,7 +423,7 @@ bool MyFrame::InitScheduler()       // Áßº¹µÇ´Â PID °Ë»ç¸¦ Ãß°¡ÇØ¾ß ÇÔ
         break;
     }
 
-    // process queueÀÇ PID¸¶´Ù color code ÇÒ´ç
+    // process queueï¿½ï¿½ PIDï¿½ï¿½ï¿½ï¿½ color code ï¿½Ò´ï¿½
     AllocateColor();
     return true;
 }
@@ -491,7 +490,7 @@ void MyFrame::SetChartArea()
         chartWidth.push_back(width);
         timeX.push_back(newX - GetTextExtent(wxString::FromDouble(elem.second, 1)).GetWidth() / 2);
         
-        // pid¸¦ °¡¿îµ¥ Á¤·Ä
+        // pidï¿½ï¿½ ï¿½ï¿½ï¿½îµ¥ ï¿½ï¿½ï¿½
         int pidWidth = GetTextExtent(elem.first != "" ? elem.first : "IDLE").GetWidth();
         int space = (width - pidWidth) / 2;
         pidX.push_back(prevX + (space >= 1 ? space : 1));
