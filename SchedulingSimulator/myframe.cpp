@@ -5,7 +5,7 @@ MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0)
 {
     // Initialize MyFrame
-    SetMinSize(wxSize(512, 512));
+    SetMinSize(wxSize(512, 560));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
     wxInitAllImageHandlers();
