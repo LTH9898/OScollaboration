@@ -1,39 +1,24 @@
 #include "waiting_queue.h"
 
 
-void waitingQueue::SetAlgorithm(Scheduling algorithm)
+void WaitingQueue::SetAlgorithm(Scheduling algorithm)
 {
 	this->algorithm = algorithm;
 
 	if (algorithm == Scheduling::FCFS)
-		fp = &waitingQueue::FCFS;
+		fp = &WaitingQueue::FCFS;
 	else if (algorithm == Scheduling::SJF)
-		fp = &waitingQueue::SJF;
+		fp = &WaitingQueue::SJF;
 	else if (algorithm == Scheduling::Priority)
-		fp = &waitingQueue::Priority;
+		fp = &WaitingQueue::Priority;
 	else
 		fp = nullptr;
 }
 
-
-
-void waitingQueue::SJF(const Process& newProcess)
+void WaitingQueue::Push(const Process& newProcess)
 {
 	for (auto iter = data.cbegin(); iter != data.cend(); iter++) {
-		if (iter->GetBurstTime() > newProcess.GetBurstTime()) {
-			
-			data.insert(iter, newProcess);
-			return;
-		}
-	}
-	data.push_back(newProcess);
-}
-
-void waitingQueue::Priority(const Process& newProcess)
-{
-	for (auto iter = data.cbegin(); iter != data.cend(); iter++) {
-
-		if (iter->GetPriority() > newProcess.GetPriority()) {
+		if ((this->*fp)(newProcess, *iter)) {
 
 			data.insert(iter, newProcess);
 			return;
@@ -41,5 +26,3 @@ void waitingQueue::Priority(const Process& newProcess)
 	}
 	data.push_back(newProcess);
 }
-
-

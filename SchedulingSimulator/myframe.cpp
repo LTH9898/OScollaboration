@@ -45,7 +45,7 @@ MyFrame::MyFrame()
    
 
 
-    // 하단 window
+    // Lower window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
     wqY = lowerWindowY + 70 + CHART_HEIGHT + 35;
 
@@ -245,7 +245,7 @@ void MyFrame::OnPaint(wxPaintEvent& event)
         // Draw separator
         dc.SetPen(*wxBLACK_PEN);
         dc.SetBrush(*wxBLACK_BRUSH);
-        dc.DrawRectangle(0, wqY - 2, size.GetX(), 2);
+        dc.DrawRectangle(0, wqY - 1, size.GetX(), 2);
 
 
         // Draw waiting queue

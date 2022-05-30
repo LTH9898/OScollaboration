@@ -15,7 +15,7 @@ public:
 	void SetTimeQuantum(const double tq)
 		{ timeQuantum = tq;}
 
-	const waitingQueue& GetWQhandler() const
+	const WaitingQueue& GetWQhandler() const
 		{ return wQ; }
 	const GanttChart& GetGantthandler() const
 		{ return ganttChart; }
@@ -29,7 +29,7 @@ public:
 
 private:
 	std::unique_ptr<ProcessQueue> pQ;
-	waitingQueue wQ;
+	WaitingQueue wQ;
 	GanttChart ganttChart;
 	Process currentProcess;
 	double time;
