@@ -381,6 +381,17 @@ bool MyFrame::InitScheduler()       // �ߺ��Ǵ� PID �˻縦 �߰��
 {
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
+
+    // Pid 중복 검사
+    for (int i = 0; i < pidList.size(); i++) {
+        for (int j = i + 1; j < pidList.size(); j++) {
+            if (pidList[i] == pidList[j]) {
+                wxMessageBox(wxT("Pid가 중복되었습니다."), wxT("PID 중복 검사"), wxICON_INFORMATION);
+                return false;
+            }
+        }
+    }
+
     double tq;
     textctrlTQ->GetValue().ToDouble(&tq);
 
