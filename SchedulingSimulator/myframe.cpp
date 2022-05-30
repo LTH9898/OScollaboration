@@ -1,10 +1,10 @@
 #include "myframe.h"
-
+#include "ResultDialog.h"
 
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0)
 {
-    // MyFrame 초기화
+    // MyFrame 
     SetMinSize(wxSize(512, 512));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
@@ -12,26 +12,27 @@ MyFrame::MyFrame()
     InitColorTable();
 
 
-    // 상단 메뉴바
+    // 
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Open, _T("&열기\tCtrl-O"));
-    menuFile->Append(ID_Save, _T("&저장\tCtrl-S"));
-    menuFile->Append(ID_SaveAs, _T("&다른 이름으로 저장\tCtrl-Shift-S"));
+    menuFile->Append(ID_Open, _T("&Open\tCtrl-O"));
+    menuFile->Append(ID_Save, _T("&Save\tCtrl-S"));
+    menuFile->Append(ID_SaveAs, _T("&Save with names\tCtrl-Shift-S"));
 
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, _T("&파일"));
+    menuBar->Append(menuFile, _T("&FILE"));
     SetMenuBar(menuBar);
 
 
-    // 상단 window
-    // 프로세스 관리 버튼
+    // 
+    // 
     wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
     new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2 * BUTTON_WIDTH, 5), btnSize);
+    
 
 
-    // 프로세스 입력 창
+    // 
 
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
@@ -44,14 +45,15 @@ MyFrame::MyFrame()
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
     // Create Scrollbar for upper window
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
+    lowerScroll = new wxScrollBar(this, SCROLL_LOWER, wxPoint(0, 400));
    
 
 
-    // 하단 window
+    // 
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
     wqY = lowerWindowY + 70 + CHART_HEIGHT + 35;
 
-    // schedular ����
+    // schedular 
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
@@ -78,12 +80,21 @@ MyFrame::MyFrame()
     new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_STEP, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
-
+    new wxButton(this, BUTTON_TEST, _T("Result"), wxPoint(200 + (BUTTON_HEIGHT + 10) * 6, lowerWindowY + 5), btnSize);
 
 
 
 
     // Event
+
+  
+   /// /////////////////////////
+  
+    Bind(wxEVT_BUTTON, &MyFrame::OnResult, this, BUTTON_TEST);
+
+
+    ////////////////////////
+
     // File events
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
@@ -99,6 +110,9 @@ MyFrame::MyFrame()
     Bind(wxEVT_BUTTON, &MyFrame::RunScheduler, this, BITMAPBTN_RUN);
     Bind(wxEVT_BUTTON, &MyFrame::StepScheduler, this, BITMAPBTN_STEP);
     Bind(wxEVT_BUTTON, &MyFrame::ResetScheduler, this, BITMAPBTN_RESET);
+    Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnLowerScroll, this, SCROLL_LOWER);
+    Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnLowerScroll, this, SCROLL_LOWER);
+    Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnLowerScroll, this, SCROLL_LOWER);
 
     // Main window event
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
@@ -109,9 +123,15 @@ MyFrame::MyFrame()
     //
     DrawGantChart();
 }
+////////////////////////////////////////////////////////////////////////
+void MyFrame::OnResult(wxCommandEvent& event)
+{
+    ResultDialog dlg(this, wxID_ANY, _("Result"));
 
-
-
+    dlg.ShowModal();
+   
+}
+////////////////////////////////////////////////////////////////////////////
 
 void MyFrame::OnOpen(wxCommandEvent& event)
 {
@@ -146,7 +166,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
 
-        wxMessageBox(_T("프로세스의 최대 생성 개수를 초과하였습니다"));
+        wxMessageBox(_T("Maximum number of processes exceeded"));
         return;
     }
 
@@ -216,7 +236,8 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     Update();
 }
 
-void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method , wxpaitDC의 경우 OnPaint안에서만 수행 가능
+
+void MyFrame::OnPaint(wxPaintEvent& event) 
 
 {
     wxSize size = GetClientSize();
@@ -321,6 +342,11 @@ void MyFrame::SetUpperScroll()
     ScrollUpperWindow();
 }
 
+void MyFrame::SetLowerScroll()
+{
+
+}
+
 void MyFrame::ScrollUpperWindow()
 {
     int baseX = 10 - upperScroll->GetThumbPosition();
@@ -333,6 +359,11 @@ void MyFrame::ScrollUpperWindow()
 
     Refresh();
     Update();
+}
+
+void MyFrame::ScrollLowerWindow()
+{
+
 }
 
 void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
@@ -377,7 +408,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
     return pQ;
 }
 
-bool MyFrame::InitScheduler()       // �ߺ��Ǵ� PID �˻縦 �߰��ؾ� ��
+bool MyFrame::InitScheduler()       //
 {
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
@@ -430,7 +461,7 @@ bool MyFrame::InitScheduler()       // �ߺ��Ǵ� PID �˻縦 �߰��
         break;
     }
 
-    // process queue�� PID���� color code �Ҵ�
+    // 
     AllocateColor();
     return true;
 }
@@ -497,7 +528,7 @@ void MyFrame::SetChartArea()
         chartWidth.push_back(width);
         timeX.push_back(newX - GetTextExtent(wxString::FromDouble(elem.second, 1)).GetWidth() / 2);
         
-        // pid�� ��� ���
+        // 
         int pidWidth = GetTextExtent(elem.first != "" ? elem.first : "IDLE").GetWidth();
         int space = (width - pidWidth) / 2;
         pidX.push_back(prevX + (space >= 1 ? space : 1));
@@ -513,12 +544,12 @@ void MyFrame::DrawGantChart() {
     //std::list<std::pair<std::string, int>> GantChart = cs.GetGantthandler;
 
 
-    //임시 GantChart 
-    std::list<std::pair<std::string, int>> tempGant;
+    //
+   /* std::list<std::pair<std::string, int>> tempGant;
     std::list<std::pair<std::string, int>>::iterator it;
 
     for (int i = 1; i < 8; i++) {
-        tempGant.push_back(make_pair("Pid " + std::to_string(i), i));
+       tempGant.push_back(make_pair("Pid " + std::to_string(i), i));
     }
 
 
@@ -529,6 +560,6 @@ void MyFrame::DrawGantChart() {
     for (it = tempGant.begin(); it != tempGant.end(); it++) {
        gant.emplace_back(new wxStaticText(this, wxID_ANY, it->first.c_str(), wxPoint(Xpos, Ypos), wxSize(SecSize * it->second, TEXT_HEIGHT * 2), style));
        Xpos += (SecSize * it->second);
-    }
+    }*/
 }
 

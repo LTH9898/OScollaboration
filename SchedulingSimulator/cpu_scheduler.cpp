@@ -3,12 +3,12 @@
 
 void CpuScheduler::StepForward()
 {
-	// CPU scheduler 초기화
+	// 
 	if (!isRunning) {
 
 		if (!pQ)
 			return;
-		// scheduling ��� ���
+		// 
 		if (pQ->empty() && wQ.Empty()) {
 
 			pQ = nullptr;
@@ -21,7 +21,7 @@ void CpuScheduler::StepForward()
 	}
 
 
-	// 현재 시간 전에 도착한 프로세스들을 processQueue에서 waitingQueue로 이동
+	// 
 	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
 		wQ.Push(pQ->top());
 		pQ->pop();
@@ -34,7 +34,6 @@ void CpuScheduler::StepForward()
 		// Preemptive
 
 		if (isPreemptive) {
-			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
 			double delta;
@@ -107,14 +106,14 @@ void CpuScheduler::StepForward()
 	}
 
 
-	// ���� �ð� �� ������ ��μ������ processQueue���� waitingQueue�� �̵�
+	// 
 	while (!pQ->empty() && time >= pQ->top().GetArrivalTime()) {
 		wQ.Push(pQ->top());
 		pQ->pop();
 	}
 
 
-	// ganttChart�� ���
+	// ganttChart
 	if (ganttChart.empty())
 		ganttChart.emplace_back(currentProcess.GetPid(), time);
 	else {
@@ -125,10 +124,10 @@ void CpuScheduler::StepForward()
 			ganttChart.emplace_back(currentProcess.GetPid(), time);
 	}
 	
-	// scheduling ��� ���
-	// ganttChart에 기록
+	// scheduling 
+	// ganttChart
 	ganttChart.emplace_back(currentProcess.GetPid(), time);
-	// scheduling 종료 조건
+	// scheduling 
 	if (pQ->empty() && wQ.Empty()) {
 
 		isRunning = false;

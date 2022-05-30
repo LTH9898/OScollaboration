@@ -15,14 +15,17 @@
 
 enum
 {
+    ID_Result,
     ID_Open = 1,
     ID_Save,
     ID_SaveAs,
 
+    BUTTON_TEST,
     BUTTON_CREATE,
     BUTTON_DELETE,
     BUTTON_CLEAR,
     SCROLL_UPPER,
+    SCROLL_LOWER,
 
     BITMAPBTN_RUN,
     BITMAPBTN_STEP,
@@ -39,6 +42,7 @@ public:
 
 private:
     // Events
+    void OnResult(wxCommandEvent& event);
     // File events
     void OnOpen(wxCommandEvent& event);
     void OnSave(wxCommandEvent& event);
@@ -54,6 +58,10 @@ private:
     void StepScheduler(wxCommandEvent& event);
     void ResetScheduler(wxCommandEvent& event)
         { scheduler.Reset(); Refresh(); Update(); }
+    void OnLowerScroll(wxScrollEvent& event)
+    {
+        ScrollLowerWindow();
+    }
 
     // Main window event
     void OnPaint(wxPaintEvent& event);
@@ -71,6 +79,9 @@ private:
     void DragUpperWindow(const wxPoint& currentPos, int direction);
     // Lower window functions
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
+    void SetLowerScroll();
+    void ScrollLowerWindow();
+    void DragLowerWindow();
     bool InitScheduler();
     void InitColorTable();
     void AllocateColor();
@@ -93,6 +104,7 @@ private:
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
+    wxScrollBar* lowerScroll;
     wxChoice* choiceAlgorithms;
 
     CpuScheduler scheduler;
