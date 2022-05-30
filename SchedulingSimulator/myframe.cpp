@@ -506,29 +506,3 @@ void MyFrame::SetChartArea()
     }
     chartEnd = prevX;
 }
-
-void MyFrame::DrawGantChart() {
-    
-    
-    //std::list<std::pair<std::string, int>> GantChart = cs.GetGantthandler;
-
-
-    //임시 GantChart 
-    std::list<std::pair<std::string, int>> tempGant;
-    std::list<std::pair<std::string, int>>::iterator it;
-
-    for (int i = 1; i < 8; i++) {
-        tempGant.push_back(make_pair("Pid " + std::to_string(i), i));
-    }
-
-
-    long style = wxALIGN_CENTER | wxBORDER_SIMPLE;
-    int Xpos = 10;
-    int Ypos = 360;
-    int SecSize = 30;
-    for (it = tempGant.begin(); it != tempGant.end(); it++) {
-       gant.emplace_back(new wxStaticText(this, wxID_ANY, it->first.c_str(), wxPoint(Xpos, Ypos), wxSize(SecSize * it->second, TEXT_HEIGHT * 2), style));
-       Xpos += (SecSize * it->second);
-    }
-}
-
