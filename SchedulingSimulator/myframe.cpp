@@ -2,7 +2,7 @@
 
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0)
+    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0), currentFilePath("")
 {
     // Initialize MyFrame
     SetMinSize(wxSize(512, 560));
@@ -14,6 +14,7 @@ MyFrame::MyFrame()
 
     // Menu bar
     wxMenu* menuFile = new wxMenu;
+    menuFile->Append(ID_New, _T("&New\tCtrl-N"));
     menuFile->Append(ID_Open, _T("&Open\tCtrl-O"));
     menuFile->Append(ID_Save, _T("&Save\tCtrl-S"));
     menuFile->Append(ID_SaveAs, _T("&Save As\tCtrl-Shift-S"));
@@ -80,6 +81,7 @@ MyFrame::MyFrame()
 
     // Event
     // File events
+    Bind(wxEVT_MENU, &MyFrame::OnNew, this, ID_New);
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnSaveAs, this, ID_SaveAs);
@@ -108,27 +110,98 @@ MyFrame::MyFrame()
 void MyFrame::OnOpen(wxCommandEvent& event)
 {
     wxFileDialog openFileDialog(this, _("Open Test case file"), "", "",
-        "Process blocks (*.pcb)|*.pcb", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-
+        "Test case (*.tc)|*.tc", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
-    wxFileInputStream input_stream(openFileDialog.GetPath());
 
-    if (!input_stream.IsOk()) {
-
+    std::ifstream ifs(openFileDialog.GetPath().utf8_string());
+    if (!ifs.is_open()) {
+    
         wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
         return;
     }
+
+    // read string from ifstream
+    auto read = [&](std::ifstream& ifs) {
+
+        std::string input;
+        ifs >> input;
+        input.pop_back();
+        return input;
+    };
+
+    // Clear textctrls
+    _ClearProcessBlock();
+    // Time quantum
+    textctrlTQ->SetValue(read(ifs));
+    // Number of process
+    blockSize = std::stoul(read(ifs));
+
+    // Create test case
+    for (int i = 0; i != blockSize; i++) {
+
+        wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
+        for (int j = 0; j != 4; j++) {
+
+            textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, read(ifs),
+                CreateBlockPos(j, i), ctrlSize, wxBORDER_SIMPLE));
+        }
+    }
+    
+    currentFilePath = openFileDialog.GetPath();
+    ifs.close();
+    SetUpperScroll();
 }
 
 void MyFrame::OnSave(wxCommandEvent& event)
 {
-    wxMessageBox("Save : nop");
+    // If currentFilePath is empty, save as
+    if (currentFilePath == "") {
+
+        _OnSaveAs();
+        return;
+    }
+
+    std::ofstream ofs(currentFilePath.utf8_string());
+    if (!ofs.is_open()) {
+
+        wxLogError("Cannot save file '%s'.", currentFilePath);
+        return;
+    }
+
+
+    ofs << textctrlTQ->GetValue().utf8_string() + ";" << std::endl;
+    ofs << blockSize << ";" << std::endl;
+    for (auto elem : textctrls)
+        ofs << elem->GetValue().utf8_string() + ";" << std::endl;
+
+    ofs.close();
+    SetUpperScroll();
 }
 
-void MyFrame::OnSaveAs(wxCommandEvent& event)
+void MyFrame::_OnSaveAs()
 {
-    wxMessageBox("Save As : nop");
+    wxFileDialog saveFileDialog(this, _("Save Test case file"), "", "",
+        "Test case (*.tc)|*.tc", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (saveFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+
+    std::ofstream ofs(saveFileDialog.GetPath().utf8_string());
+    if (!ofs.is_open()) {
+
+        wxLogError("Cannot save file '%s'.", saveFileDialog.GetPath());
+        return;
+    }
+
+
+    ofs << textctrlTQ->GetValue().utf8_string() + ";" << std::endl;
+    ofs << blockSize << ";" << std::endl;
+    for (auto elem : textctrls)
+        ofs << elem->GetValue().utf8_string() + ";" << std::endl;
+
+    currentFilePath = saveFileDialog.GetPath();
+    ofs.close();
+    SetUpperScroll();
 }
 
 
@@ -169,12 +242,13 @@ void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
-void MyFrame::ClearProcessBlock(wxCommandEvent& event)
+void MyFrame::_ClearProcessBlock()
 {
     for (auto elem : textctrls)
         delete elem;
     textctrls.clear();
     blockSize = 0;
+    textctrlTQ->SetValue("");
 
     SetUpperScroll();
 }
