@@ -24,7 +24,7 @@ public:
 	{
 		auto iter = data.cbegin();
 		for (; iter != data.cend(); iter++)
-			if (burst < iter->GetArrivalTime())
+			if (arrival < iter->GetArrivalTime())
 				break;
 		data.emplace(iter, pid, arrival, burst, priority);
 	}

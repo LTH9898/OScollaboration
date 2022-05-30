@@ -26,25 +26,18 @@ public:
 	unsigned GetPriority() const { return priority; }
 
 	Process& operator=(const Process& rhs);
-
-	// 프로세스 객체와 'double'의 연산자로 서비스시간을 감소
-	// 예) Process P1 ( burstTime = 10 )
-	//     P1 -= 3
-	// 결과) P1 ( burstTime = 7 )
 	Process& operator-=(const double time);
 	Process& operator+=(const double time);
-	const Process operator-(const double time);
-	const Process operator+(const double time);
+	Process operator-(const double time) const;
+	Process operator+(const double time) const;
 
 private:
-	std::string pid;		// 프로세스 ID
-	double arrivalTime;		// 도착시간
-	double burstTime;		// 서비스시간
-	unsigned priority;		// 우선순위
+	std::string pid;
+	double arrivalTime;
+	double burstTime;
+	unsigned priority;
 };
 
-
-// 간트 차트에 프로세스 ID와 그 프로세스의 종료 시점을 기록
 using GanttChart = std::list<std::pair<std::string, double>>;
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef __CPU_SCHEDULER_H__
 #define __CPU_SCHEDULER_H__
 #include "waiting_queue.h"
+#include "process_queue.h"
 
 
 class CpuScheduler

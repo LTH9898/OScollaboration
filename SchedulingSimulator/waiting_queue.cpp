@@ -26,7 +26,7 @@ void waitingQueue::SJF(const Process& newProcess)
 			return;
 		}
 	}
-	data.push_back(newProcess); // 만약 for문 다 돌았는데 burstTime BurstTime이 더 작은게 없는 경우
+	data.push_back(newProcess);
 }
 
 void waitingQueue::Priority(const Process& newProcess)
