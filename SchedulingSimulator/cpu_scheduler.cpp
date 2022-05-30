@@ -32,39 +32,18 @@ void CpuScheduler::StepForward()
 	if (!wQ.Empty()) {
 
 		// Preemptive
-
 		if (isPreemptive) {
 			int delta;
 			currentProcess = wQ.Top();
 			wQ.Pop();
-			double delta;
-			double curBurstT = currentProcess.GetBurstTime();
 
-			if (wQ.GetAlgorithm() == Scheduling::SJF) {
-				while (!pQ->empty()
-					&& pQ->top().GetBurstTime() >= currentProcess.GetBurstTime()
-					&& pQ->top().GetArrivalTime() - time <= curBurstT) {
-					wQ.Push(pQ->top());
-					pQ->pop();
-				}
-			}
-			else { //Priority
-				while (!pQ->empty()
-					&& pQ->top().GetPriority() >= currentProcess.GetPriority()
-					&& pQ->top().GetArrivalTime() - time <= curBurstT) {
-					wQ.Push(pQ->top());
-					pQ->pop();
-				}
-			}
-
-			if (pQ->empty() || pQ->top().GetArrivalTime() - time > currentProcess.GetBurstTime()) {
+			if(pQ->empty() || pQ->top().GetArrivalTime() - time > currentProcess.GetBurstTime()){
 				delta = currentProcess.GetBurstTime();
 			}
 			else {
 				delta = pQ->top().GetArrivalTime() - time;
 				wQ.Push(currentProcess - delta);
 			}
-
 			time += delta;
 		}
 
