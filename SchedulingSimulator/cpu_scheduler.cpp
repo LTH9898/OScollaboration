@@ -23,7 +23,6 @@ void CpuScheduler::StepForward()
 	if (!wQ.Empty()) {
 
 		// Preemptive
-
 		if (isPreemptive) {
 			currentProcess = wQ.Top();
 			wQ.Pop();
