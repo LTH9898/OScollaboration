@@ -32,6 +32,7 @@ public:
 	Process operator+(const double time) const;
 
 private:
+
 	std::string pid;
 	double arrivalTime;
 	double burstTime;
