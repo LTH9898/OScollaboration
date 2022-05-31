@@ -156,7 +156,7 @@ void MyFrame::OnResult(wxCommandEvent& event)
     grid->SetRowSize(pidList.size(), 40);
     for (int i = 0; i < pidList.size(); i++)
     {
-        grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
+        grid->SetRowLabelValue(i, pidList[i]);
         grid->SetRowSize(i, 40);
     }
 
@@ -175,11 +175,11 @@ void MyFrame::OnResult(wxCommandEvent& event)
     {
         for (int i = 0; i < pidList.size(); i++)
         {
-            if (gantt_copy.back().first.compare((grid->GetRowLabelValue(i).ToStdString())))
+            if (gantt_copy.back().first == grid->GetRowLabelValue(i).ToStdString())
             {
-                wxString temp = gantt_copy.back().first;
+                
                 grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second));
-                gantt_copy.pop_back();
+                
             }
         }
         
