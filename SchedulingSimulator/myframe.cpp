@@ -477,6 +477,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
 
         pQ->Emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
         pidList.push_back(tempPid);
+        arrivalTimeList.push_back(tempArrivaltime);
     }
     return pQ;
 }
