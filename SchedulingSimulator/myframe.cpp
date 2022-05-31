@@ -136,29 +136,49 @@ void MyFrame::OnResult(wxCommandEvent& event)
     dialog->Create(NULL, wxID_ANY,
         "Result",
         wxDefaultPosition,
-        wxDefaultSize,
+        wxSize(700, 500),
         wxDEFAULT_DIALOG_STYLE,
         wxASCII_STR(wxDialogNameStr));
 
     wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(400, 300));
-    
+    wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(500, 300));
 
-    //create Button field
-    //wxSizer* buttonSizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
-    //mainSizer->Add(buttonSizer);
+    grid->CreateGrid(pidList.size()+1 , 3);
 
-    /*for (auto i = 0; i < pidList.size(); i++)
+    grid->SetColLabelValue(0, "Waiting Time");
+    grid->SetColLabelValue(1, "Response Time");
+    grid->SetColLabelValue(2, "Turnaround Time");
+    //Average Row name Change
+    grid->SetRowLabelValue(pidList.size(), "Average");
+    grid->SetRowSize(pidList.size(), 40);
+    for (int i = 0; i < pidList.size(); i++)
     {
-        dialog->CreateTextSizer(pidList[i]);
-    }*/
-    
+        grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
+        grid->SetRowSize(i, 40);
+    }
+     
+    for (int i = 0; i < 4; i++)
+    {
+        grid->SetColSize(i, 200);
+    }
 
-   
+    //grid->SetCellValue(0, 0, "wxGrid is good");
+    //grid->SetCellValue(0, 3, "This is read->only");
+    //grid->SetReadOnly(0, 3);
+    //// Colours can be specified for grid cell contents
+    //grid->SetCellValue(3, 3, "green on grey");
+    //grid->SetCellTextColour(3, 3, *wxGREEN);
+    //grid->SetCellBackgroundColour(3, 3, *wxLIGHT_GREY);
+    //// We can specify the some cells will store numeric
+    //// values rather than strings. Here we set grid column 5
+    //// to hold floating point values displayed with width of 6
+    //// and precision of 2
+    //grid->SetColFormatFloat(5, 6, 2);
+    //grid->SetCellValue(0, 6, "3.1415");
     
     SetSizer(mainSizer);
-    SetMinSize(wxSize(400, 100));
+    SetMinSize(wxSize(700, 100));
     
    
     
