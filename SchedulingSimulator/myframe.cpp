@@ -759,15 +759,11 @@ GanttChart  MyFrame::GetWaitingTime() const
             for (int i = 0; i < burstTimeList.size(); i++) {
                 if (burstTimeList[i].first == rit->first) {
                     temp -= burstTimeList[i].second;
+                    temp -= arrivalList[i].second; // only if arrivalList and burstTime list sorted in same order!!!!!
                     break;
                 }
             }
-            for (int i = 0; i < arrivalList.size(); i++) {
-                if (arrivalList[i].first == rit->first) {
-                    temp -= arrivalList[i].second;
-                    break;
-                }
-            }
+
             WTList.push_back(make_pair(rit->first, temp));
             cnt++;
         }
