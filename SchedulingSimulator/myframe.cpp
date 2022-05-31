@@ -125,11 +125,15 @@ MyFrame::MyFrame()
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
 
     //
-    DrawGantChart();
+   // DrawGantChart();
 }
 ////////////////////////////////////////////////////////////////////////
 void MyFrame::OnResult(wxCommandEvent& event)
 {
+    
+    auto& gantt = scheduler.GetGantthandler();
+
+    /// grid settings
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     wxDialog* dialog = new wxDialog;
@@ -149,7 +153,6 @@ void MyFrame::OnResult(wxCommandEvent& event)
     grid->SetColLabelValue(0, "Waiting Time");
     grid->SetColLabelValue(1, "Response Time");
     grid->SetColLabelValue(2, "Turnaround Time");
-    //Average Row name Change
     grid->SetRowLabelValue(pidList.size(), "Average");
     grid->SetRowSize(pidList.size(), 40);
     for (int i = 0; i < pidList.size(); i++)
@@ -158,12 +161,35 @@ void MyFrame::OnResult(wxCommandEvent& event)
         grid->SetRowSize(i, 40);
     }
 
-    grid->SetCellValue(0, 0, std::to_string(timeX[0]));
-     
     for (int i = 0; i < 4; i++)
     {
         grid->SetColSize(i, 200);
     }
+
+    //Turnaround logic
+
+    int counter = pidList.size();
+    std::list<std::pair<std::string, double>> gantt_copy(gantt);
+    //make copy of gantt
+
+    while (counter > 0)
+    {
+        for (int i = 0; i < pidList.size(); i++)
+        {
+            if (gantt_copy.back().first.compare((grid->GetRowLabelValue(i).ToStdString())))
+            {
+                wxString temp = gantt_copy.back().first;
+                grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second));
+                gantt_copy.pop_back();
+            }
+        }
+        
+        counter = counter--;
+    }
+
+   // grid->SetCellValue(0, 0, std::to_string(gantt.front().second));
+    
+    
 
     //grid->SetCellValue(0, 0, "wxGrid is good");
     //grid->SetCellValue(0, 3, "This is read->only");
@@ -594,28 +620,5 @@ void MyFrame::SetChartArea()
     chartEnd = prevX;
 }
 
-void MyFrame::DrawGantChart() {
-    
-    
-    //std::list<std::pair<std::string, int>> GantChart = cs.GetGantthandler;
 
-
-    //
-   /* std::list<std::pair<std::string, int>> tempGant;
-    std::list<std::pair<std::string, int>>::iterator it;
-
-    for (int i = 1; i < 8; i++) {
-       tempGant.push_back(make_pair("Pid " + std::to_string(i), i));
-    }
-
-
-    long style = wxALIGN_CENTER | wxBORDER_SIMPLE;
-    int Xpos = 10;
-    int Ypos = 360;
-    int SecSize = 30;
-    for (it = tempGant.begin(); it != tempGant.end(); it++) {
-       gant.emplace_back(new wxStaticText(this, wxID_ANY, it->first.c_str(), wxPoint(Xpos, Ypos), wxSize(SecSize * it->second, TEXT_HEIGHT * 2), style));
-       Xpos += (SecSize * it->second);
-    }*/
-}
 
