@@ -91,6 +91,10 @@ private:
     void ShowResult();
 
 
+    GanttChart GetTurnAroundTime() const;
+    GanttChart  GetWaitingTime() const;
+    GanttChart GetResponseTime() const;
+
     // Private variables
     wxString currentFilePath;
 

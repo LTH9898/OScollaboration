@@ -1,5 +1,5 @@
 ﻿#include "myframe.h"
-
+#include <set>
 
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(20), wqX(0), currentFilePath("")
@@ -727,3 +727,92 @@ void MyFrame::ShowResult()
     dialog->ShowModal();
 }
 ////////////////////////////////////////////////////////////////////////////
+GanttChart MyFrame::GetTurnAroundTime() const
+{
+    GanttChart TAList;
+    GanttChart ganttChart = scheduler.GetGantthandler();
+    std::set<std::string> s;
+    GanttChart::const_reverse_iterator rit;
+    int cnt;
+    for (rit = ganttChart.rbegin(), cnt = 0; rit != ganttChart.rend(); rit++, cnt < pidList.size()) {
+        if (s.find(rit->first) == s.end()) {
+            s.insert(rit->first);
+
+            double temp = rit->second;
+            for (int i = 0; i < pidList.size(); i++) {
+                if (pidList[i] == rit->first) {
+                    temp -= arrivalTimeList[i];
+                    break;
+                }
+            }
+            TAList.push_back(make_pair(rit->first, temp));
+            cnt++;
+        }
+    }
+
+    return TAList;
+}
+
+
+
+
+GanttChart  MyFrame::GetWaitingTime() const
+{
+
+    GanttChart WTList;
+    GanttChart ganttChart = scheduler.GetGantthandler();
+    std::set<std::string> s;
+    GanttChart::const_reverse_iterator rit;
+    int cnt;
+    for (rit = ganttChart.rbegin(), cnt = 0; rit != ganttChart.rend(); rit++, cnt < pidList.size()) {
+        if (s.find(rit->first) == s.end()) {
+            s.insert(rit->first);
+
+            double temp = rit->second;
+            for (int i = 0; i < pidList.size(); i++) {
+                if (pidList[i] == rit->first) {
+                    temp -= burstTimeList[i];
+                    temp -= arrivalTimeList[i]; // only if arrivalList and burstTime list sorted in same order!!!!!
+                    break;
+                }
+            }
+
+            WTList.push_back(make_pair(rit->first, temp));
+            cnt++;
+        }
+    }
+
+    return WTList;
+}
+
+
+GanttChart  MyFrame::GetResponseTime() const
+{
+
+    GanttChart RTList;
+    GanttChart ganttChart = scheduler.GetGantthandler();
+    std::set<std::string> s;
+    GanttChart::const_iterator it;
+    int cnt;
+    for (it = ganttChart.begin(), cnt = 0; it != ganttChart.end(); it++, cnt < pidList.size()) {
+        if (s.find(it->first) == s.end()) {
+            s.insert(it->first);
+
+            double temp = it->second;
+            if (it != ganttChart.begin()) {
+                temp = (--it)->second;
+                ++it;
+            }
+            for (int i = 0; i < pidList.size(); i++) {
+                if (pidList[i] == it->first) {
+                    temp -= arrivalTimeList[i];
+                    break;
+                }
+            }
+            RTList.push_back(make_pair(it->first, temp));
+            cnt++;
+        }
+    }
+
+    return RTList;
+}

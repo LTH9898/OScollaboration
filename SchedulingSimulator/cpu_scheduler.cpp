@@ -1,6 +1,5 @@
 #include "cpu_scheduler.h"
 
-
 void CpuScheduler::StepForward()
 {
 
