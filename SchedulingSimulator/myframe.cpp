@@ -670,32 +670,52 @@ void MyFrame::ShowResult()
     //Average Row name Change
     grid->SetRowLabelValue(pidList.size(), "Average");
     grid->SetRowSize(pidList.size(), 40);
+
+    auto& gantt = scheduler.GetGantthandler();
+
     for (int i = 0; i < pidList.size(); i++)
     {
         grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
         grid->SetRowSize(i, 40);
     }
 
-    grid->SetCellValue(0, 0, std::to_string(timeX[0]));
+    for (int i = 0; i < 3; i++)
+    {
+        grid->SetColSize(i, 200);
+    }
+    std::vector<int> is_calculated(pidList.size());
 
-    for (int i = 0; i < 4; i++)
+    //Get the Turnaround Time
+
+    int counter = pidList.size();
+    int counter2 = counter;
+    std::list<std::pair<std::string, double>> gantt_copy(gantt);
+    //make copy of gantt
+    std::string temp;
+    while (counter > 0)
+    {
+        for (int i = 0; i < counter2; i++)
+        {
+            if (gantt_copy.back().first == grid->GetRowLabelValue(i).ToStdString() && is_calculated[i] == 0)
+            {
+                double tempArrivaltime;
+                grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second));
+                is_calculated[i] = 1;
+                counter--;
+            }
+        }
+        gantt_copy.pop_back();
+    }
+
+
+    //grid->SetCellValue(0, 0, std::to_string(timeX[0]));
+
+    for (int i = 0; i < 3; i++)
     {
         grid->SetColSize(i, 200);
     }
 
-    //grid->SetCellValue(0, 0, "wxGrid is good");
-    //grid->SetCellValue(0, 3, "This is read->only");
-    //grid->SetReadOnly(0, 3);
-    //// Colours can be specified for grid cell contents
-    //grid->SetCellValue(3, 3, "green on grey");
-    //grid->SetCellTextColour(3, 3, *wxGREEN);
-    //grid->SetCellBackgroundColour(3, 3, *wxLIGHT_GREY);
-    //// We can specify the some cells will store numeric
-    //// values rather than strings. Here we set grid column 5
-    //// to hold floating point values displayed with width of 6
-    //// and precision of 2
-    //grid->SetColFormatFloat(5, 6, 2);
-    //grid->SetCellValue(0, 6, "3.1415");
+
 
     SetSizer(mainSizer);
     SetMinSize(wxSize(700, 100));
