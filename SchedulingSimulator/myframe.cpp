@@ -43,7 +43,6 @@ MyFrame::MyFrame()
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
     // Create Scrollbar for upper window
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
-   
 
 
     // Lower window
@@ -286,6 +285,7 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     scheduler.StepForward();
 
     SetChartArea();
+    lowerWindowX += GetClientSize().GetWidth() - chartEnd - 40;
     SetBaseX(lowerWindowX, chartEnd);
     SetBaseX(wqX, wqEnd);
     Refresh();
@@ -293,7 +293,6 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
 }
 
 void MyFrame::OnPaint(wxPaintEvent& event)
-
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);
@@ -453,6 +452,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
     pidList.clear();
  
     for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
+
         std::string tempPid = textctrls[i]->GetValue().ToStdString();
         double tempArrivaltime;
         textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
@@ -477,11 +477,19 @@ bool MyFrame::InitScheduler()
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
 
-    // Pid 중복 검사
+    // Check duplicate PID
     for (int i = 0; i < pidList.size(); i++) {
+
+        if (pidList[i] == "") {
+
+            wxMessageBox("No empty Process ID allowed", "Test case error", wxICON_INFORMATION);
+            return false;
+        }
         for (int j = i + 1; j < pidList.size(); j++) {
+
             if (pidList[i] == pidList[j]) {
-                wxMessageBox(wxT("Pid가 중복되었습니다."), wxT("PID 중복 검사"), wxICON_INFORMATION);
+
+                wxMessageBox("No duplicate Process ID allowed", "Test case error", wxICON_INFORMATION);
                 return false;
             }
         }
@@ -507,7 +515,7 @@ bool MyFrame::InitScheduler()
     case 3://RR
         if (tq <= 0) {
 
-            wxMessageBox("Time quantum must be more than 0");
+            wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
             return false;
         }
         scheduler.SetAlgorithm(Scheduling::FCFS, false, true);
@@ -525,7 +533,7 @@ bool MyFrame::InitScheduler()
     case 6://Non-preemptive Priority with RR
         if (tq <= 0) {
 
-            wxMessageBox("Time quantum must be more than 0");
+            wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
             return false;
         }
         scheduler.SetAlgorithm(Scheduling::Priority, false, true);
