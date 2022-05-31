@@ -4,7 +4,6 @@
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(20), wqX(0), currentFilePath("")
 {
-
     // Initialize MyFrame
     SetMinSize(wxSize(512, 560));
     SetBackgroundColour(*wxWHITE);
@@ -13,22 +12,15 @@ MyFrame::MyFrame()
     InitColorTable();
 
 
-
     // Menu bar
     wxMenu* menuFile = new wxMenu;
     menuFile->Append(ID_New, _T("&New\tCtrl-N"));
     menuFile->Append(ID_Open, _T("&Open\tCtrl-O"));
     menuFile->Append(ID_Save, _T("&Save\tCtrl-S"));
     menuFile->Append(ID_SaveAs, _T("&Save As\tCtrl-Shift-S"));
-
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(menuFile, _T("&File"));
-
     SetMenuBar(menuBar);
-
-    
-
-
 
 
     // Upeer window
@@ -40,7 +32,6 @@ MyFrame::MyFrame()
     
 
     // Process input
-
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
@@ -50,8 +41,10 @@ MyFrame::MyFrame()
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Priority "), wxPoint(10, 90 + 3 * TEXT_HEIGHT), textSize, style));
     wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
+
     // Create Scrollbar for upper window
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
+
 
     // schedular 
     // Lower window
@@ -85,19 +78,8 @@ MyFrame::MyFrame()
     new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_STEP, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
-    new wxButton(this, BUTTON_TEST, _T("Result"), wxPoint(200 + (BUTTON_HEIGHT + 10) * 6, lowerWindowY + 5), btnSize);
-
-    
-    
 
 
-
-   /// /////////////////////////
-  
-    Bind(wxEVT_BUTTON, &MyFrame::OnResult, this, BUTTON_TEST);
-
-
-    ////////////////////////
     // File events
     Bind(wxEVT_MENU, &MyFrame::OnNew, this, ID_New);
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
@@ -114,9 +96,6 @@ MyFrame::MyFrame()
     Bind(wxEVT_BUTTON, &MyFrame::RunScheduler, this, BITMAPBTN_RUN);
     Bind(wxEVT_BUTTON, &MyFrame::StepScheduler, this, BITMAPBTN_STEP);
     Bind(wxEVT_BUTTON, &MyFrame::ResetScheduler, this, BITMAPBTN_RESET);
-    Bind(wxEVT_SCROLL_THUMBTRACK, &MyFrame::OnLowerScroll, this, SCROLL_LOWER);
-    Bind(wxEVT_SCROLL_PAGEUP, &MyFrame::OnLowerScroll, this, SCROLL_LOWER);
-    Bind(wxEVT_SCROLL_PAGEDOWN, &MyFrame::OnLowerScroll, this, SCROLL_LOWER);
 
     // Main window event
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
@@ -124,67 +103,9 @@ MyFrame::MyFrame()
     Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
 }
-////////////////////////////////////////////////////////////////////////
-void MyFrame::OnResult(wxCommandEvent& event)
-{
-    wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
-    long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
-    wxDialog* dialog = new wxDialog;
-    dialog->Create(NULL, wxID_ANY,
-        "Result",
-        wxDefaultPosition,
-        wxSize(700, 500),
-        wxDEFAULT_DIALOG_STYLE,
-        wxASCII_STR(wxDialogNameStr));
 
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(500, 300));
 
-    grid->CreateGrid(pidList.size()+1 , 3);
-
-    grid->SetColLabelValue(0, "Waiting Time");
-    grid->SetColLabelValue(1, "Response Time");
-    grid->SetColLabelValue(2, "Turnaround Time");
-    //Average Row name Change
-    grid->SetRowLabelValue(pidList.size(), "Average");
-    grid->SetRowSize(pidList.size(), 40);
-    for (int i = 0; i < pidList.size(); i++)
-    {
-        grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
-        grid->SetRowSize(i, 40);
-    }
-
-    grid->SetCellValue(0, 0, std::to_string(timeX[0]));
-     
-    for (int i = 0; i < 4; i++)
-    {
-        grid->SetColSize(i, 200);
-    }
-
-    //grid->SetCellValue(0, 0, "wxGrid is good");
-    //grid->SetCellValue(0, 3, "This is read->only");
-    //grid->SetReadOnly(0, 3);
-    //// Colours can be specified for grid cell contents
-    //grid->SetCellValue(3, 3, "green on grey");
-    //grid->SetCellTextColour(3, 3, *wxGREEN);
-    //grid->SetCellBackgroundColour(3, 3, *wxLIGHT_GREY);
-    //// We can specify the some cells will store numeric
-    //// values rather than strings. Here we set grid column 5
-    //// to hold floating point values displayed with width of 6
-    //// and precision of 2
-    //grid->SetColFormatFloat(5, 6, 2);
-    //grid->SetCellValue(0, 6, "3.1415");
-    
-    SetSizer(mainSizer);
-    SetMinSize(wxSize(700, 100));
-    
-   
-    
-    dialog->ShowModal();
-    
-}
-////////////////////////////////////////////////////////////////////////////
 
 void MyFrame::OnOpen(wxCommandEvent& event)
 {
@@ -356,6 +277,8 @@ void MyFrame::RunScheduler(wxCommandEvent& event)
     SetBaseX(wqX, wqEnd);
     Refresh();
     Update();
+
+    ShowResult();
 }   
 
 void MyFrame::StepScheduler(wxCommandEvent& event)
@@ -363,6 +286,7 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     if (!scheduler.IsRunning())
         if (!InitScheduler())
             return;
+
     scheduler.StepForward();
 
     SetChartArea();
@@ -371,6 +295,9 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     SetBaseX(wqX, wqEnd);
     Refresh();
     Update();
+
+    if (!scheduler.IsRunning())
+        ShowResult();
 }
 
 
@@ -497,11 +424,6 @@ void MyFrame::SetUpperScroll()
     ScrollUpperWindow();
 }
 
-void MyFrame::SetLowerScroll()
-{
-
-}
-
 void MyFrame::ScrollUpperWindow()
 {
     int baseX = 10 - upperScroll->GetThumbPosition();
@@ -511,11 +433,6 @@ void MyFrame::ScrollUpperWindow()
     for (int i = 0; i != textctrls.size(); i++)
         textctrls[i]->SetPosition(wxPoint(baseX + TEXT_WIDTH + (i / 4) * TEXTCTRL_WIDTH,
             textctrls[i]->GetPosition().y));
-}
-
-void MyFrame::ScrollLowerWindow()
-{
-
 }
 
 void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
@@ -563,7 +480,6 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
     }
     return pQ;
 }
-
 
 bool MyFrame::InitScheduler()
 {
@@ -725,3 +641,65 @@ void MyFrame::SetBaseX(int& baseX, int end)
             baseX = width - end - 20;
     }
 }
+
+
+
+
+////////////////////////////////////////////////////////////////////////
+void MyFrame::ShowResult()
+{
+    wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
+    long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
+    wxDialog* dialog = new wxDialog;
+    dialog->Create(NULL, wxID_ANY,
+        "Result",
+        wxDefaultPosition,
+        wxSize(700, 500),
+        wxDEFAULT_DIALOG_STYLE,
+        wxASCII_STR(wxDialogNameStr));
+
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+    wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(500, 300));
+
+    grid->CreateGrid(pidList.size() + 1, 3);
+
+    grid->SetColLabelValue(0, "Waiting Time");
+    grid->SetColLabelValue(1, "Response Time");
+    grid->SetColLabelValue(2, "Turnaround Time");
+    //Average Row name Change
+    grid->SetRowLabelValue(pidList.size(), "Average");
+    grid->SetRowSize(pidList.size(), 40);
+    for (int i = 0; i < pidList.size(); i++)
+    {
+        grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
+        grid->SetRowSize(i, 40);
+    }
+
+    grid->SetCellValue(0, 0, std::to_string(timeX[0]));
+
+    for (int i = 0; i < 4; i++)
+    {
+        grid->SetColSize(i, 200);
+    }
+
+    //grid->SetCellValue(0, 0, "wxGrid is good");
+    //grid->SetCellValue(0, 3, "This is read->only");
+    //grid->SetReadOnly(0, 3);
+    //// Colours can be specified for grid cell contents
+    //grid->SetCellValue(3, 3, "green on grey");
+    //grid->SetCellTextColour(3, 3, *wxGREEN);
+    //grid->SetCellBackgroundColour(3, 3, *wxLIGHT_GREY);
+    //// We can specify the some cells will store numeric
+    //// values rather than strings. Here we set grid column 5
+    //// to hold floating point values displayed with width of 6
+    //// and precision of 2
+    //grid->SetColFormatFloat(5, 6, 2);
+    //grid->SetCellValue(0, 6, "3.1415");
+
+    SetSizer(mainSizer);
+    SetMinSize(wxSize(700, 100));
+
+    dialog->ShowModal();
+}
+////////////////////////////////////////////////////////////////////////////
