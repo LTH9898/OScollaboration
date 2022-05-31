@@ -703,7 +703,7 @@ void MyFrame::ShowResult()
             if (gantt_copy.back().first == grid->GetRowLabelValue(i).ToStdString() && is_calculated[i] == 0)
             {
                 double tempArrivaltime;
-                grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second));
+                grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second - arrivalTimeList[i]));
                 is_calculated[i] = 1;
                 counter--;
             }
