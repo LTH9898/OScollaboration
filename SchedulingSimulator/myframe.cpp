@@ -689,6 +689,10 @@ void MyFrame::ShowResult()
     }
     std::vector<int> is_calculated(pidList.size());
 
+    for (int i = 0; i < 3; i++)
+    {
+        grid->SetColSize(i, 200);
+    }
     //Get the Turnaround Time
 
     int counter = pidList.size();
@@ -704,6 +708,7 @@ void MyFrame::ShowResult()
             {
                 double tempArrivaltime;
                 grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second - arrivalTimeList[i]));
+                grid->SetCellValue(i, 0, std::to_string(gantt_copy.back().second - arrivalTimeList[i] - burstTimeList[i]));
                 is_calculated[i] = 1;
                 counter--;
             }
@@ -711,13 +716,27 @@ void MyFrame::ShowResult()
         gantt_copy.pop_back();
     }
 
+    //Get the ResponseTime IN PROGRESS...
+
+    int counter_R = pidList.size();
+
+    while (counter_R > 0)
+    {
+        for (int i = 0; i < counter2; i++)
+        {
+            if (gantt_copy.front().first == grid->GetRowLabelValue(i).ToStdString() && is_calculated[i] == 0)
+            {
+                double tempArrivaltime;
+                grid->SetCellValue(i, 2, std::to_string(gantt_copy.front().second - arrivalTimeList[i]));
+                is_calculated[i] = 1;
+                counter_R--;
+            }
+        }
+        gantt_copy.pop_front();
+    }
 
     //grid->SetCellValue(0, 0, std::to_string(timeX[0]));
 
-    for (int i = 0; i < 3; i++)
-    {
-        grid->SetColSize(i, 200);
-    }
 
 
 
