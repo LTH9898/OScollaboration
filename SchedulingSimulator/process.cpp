@@ -22,14 +22,14 @@ Process& Process::operator+=(const double time)
 	return *this;
 }
 
-const Process Process::operator-(const double time)
+Process Process::operator-(const double time) const
 {
 	Process temp(*this);
 	temp.burstTime -= time;
 	return temp;
 }
 
-const Process Process::operator+(const double time)
+Process Process::operator+(const double time) const
 {
 	Process temp(*this);
 	temp.burstTime += time;
