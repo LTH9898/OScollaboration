@@ -57,7 +57,7 @@ private:
         { _ClearProcessBlock(); }
         void _ClearProcessBlock();
     void OnUpperScroll(wxScrollEvent& event)
-        { ScrollUpperWindow(); }
+        { ScrollUpperWindow(); Refresh(); Update(); }
     // Lower window events
     void RunScheduler(wxCommandEvent& event);
     void StepScheduler(wxCommandEvent& event);
@@ -84,14 +84,13 @@ private:
     void InitColorTable();
     void AllocateColor();
     void SetChartArea();
-    //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
+    void SetBaseX(int& baseX, int end);
 
 
     // Private variables
     wxString currentFilePath;
 
     std::vector<wxStaticText*> texts;
-
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
