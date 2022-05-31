@@ -2,7 +2,7 @@
 
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0), currentFilePath("")
+    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(20), wqX(0), currentFilePath("")
 {
 
     // Initialize MyFrame
@@ -52,8 +52,6 @@ MyFrame::MyFrame()
     textctrlTQ = new wxTextCtrl(this, wxID_ANY, "", wxPoint(TEXT_WIDTH + 10, 45), ctrlSize, wxBORDER_SIMPLE);
     // Create Scrollbar for upper window
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
-    lowerScroll = new wxScrollBar(this, SCROLL_LOWER, wxPoint(0, 400));
-    
 
     // schedular 
     // Lower window
@@ -232,6 +230,8 @@ void MyFrame::OnOpen(wxCommandEvent& event)
     currentFilePath = openFileDialog.GetPath();
     ifs.close();
     SetUpperScroll();
+    Refresh();
+    Update();
 }
 
 void MyFrame::OnSave(wxCommandEvent& event)
@@ -257,7 +257,6 @@ void MyFrame::OnSave(wxCommandEvent& event)
         ofs << elem->GetValue().utf8_string() + ";" << std::endl;
 
     ofs.close();
-    SetUpperScroll();
 }
 
 void MyFrame::_OnSaveAs()
@@ -282,7 +281,6 @@ void MyFrame::_OnSaveAs()
 
     currentFilePath = saveFileDialog.GetPath();
     ofs.close();
-    SetUpperScroll();
 }
 
 
@@ -307,6 +305,8 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
     ++blockSize;
 
     SetUpperScroll();
+    Refresh();
+    Update();
 }
 
 void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
@@ -322,6 +322,8 @@ void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
     --blockSize;
 
     SetUpperScroll();
+    Refresh();
+    Update();
 }
 
 void MyFrame::_ClearProcessBlock()
@@ -333,6 +335,8 @@ void MyFrame::_ClearProcessBlock()
     textctrlTQ->SetValue("");
 
     SetUpperScroll();
+    Refresh();
+    Update();
 }
 
 
@@ -348,9 +352,11 @@ void MyFrame::RunScheduler(wxCommandEvent& event)
         scheduler.StepForward();
 
     SetChartArea();
+    SetBaseX(lowerWindowX, chartEnd);
+    SetBaseX(wqX, wqEnd);
     Refresh();
     Update();
-}
+}   
 
 void MyFrame::StepScheduler(wxCommandEvent& event)
 {
@@ -360,13 +366,15 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     scheduler.StepForward();
 
     SetChartArea();
+    lowerWindowX += GetClientSize().GetWidth() - chartEnd - 40;
+    SetBaseX(lowerWindowX, chartEnd);
+    SetBaseX(wqX, wqEnd);
     Refresh();
     Update();
 }
 
 
 void MyFrame::OnPaint(wxPaintEvent& event)
-
 {
     wxSize size = GetClientSize();
     wxPaintDC dc(this);
@@ -376,16 +384,16 @@ void MyFrame::OnPaint(wxPaintEvent& event)
     dc.DrawRectangle(0, lowerWindowY, size.GetX(), BAR_SIZE);
     
     // If ganttchart is not empty, draw ganttchart
-    auto &gantt = scheduler.GetGantthandler();
+    auto& gantt = scheduler.GetGantthandler();
     if (!gantt.empty()) {
 
         dc.DrawText("Gantt chart", 20, lowerWindowY + 50);
         int i = 0;
-        int x = lowerWindowX + 20;
+        int x = lowerWindowX;
         int y = lowerWindowY + 70;
         dc.SetPen(*wxBLACK_PEN);
 
-        for (auto elem : gantt) {
+        for (auto& elem : gantt) {
 
             dc.SetBrush(wxColour(colorList[elem.first]));
             dc.DrawRectangle(x + chartX[i], y, chartWidth[i], CHART_HEIGHT);
@@ -435,7 +443,10 @@ void MyFrame::OnWindowSize(wxSizeEvent& event)
 {
     wxSize size = GetClientSize();
     upperScroll->SetSize(wxSize(size.GetX(), 15));
+
     SetUpperScroll();
+    SetBaseX(lowerWindowX, chartEnd);
+    SetBaseX(wqX, wqEnd);
 
     Refresh();
     Update();
@@ -449,7 +460,23 @@ void MyFrame::OnMotion(wxMouseEvent& event) {
         int direction = currentPos.x - previousPos.x;
         previousPos = currentPos;
 
-        DragUpperWindow(currentPos, direction);
+        // Gantt chart dragging event
+        if (lowerWindowY + 35 < currentPos.y && currentPos.y < wqY) {
+
+            lowerWindowX += direction;
+            SetBaseX(lowerWindowX, chartEnd);
+            Refresh();
+            Update();
+        }
+        else if (wqY < currentPos.y) {
+
+            wqX += direction;
+            SetBaseX(wqX, wqEnd);
+            Refresh();
+            Update();
+        }
+        else
+            DragUpperWindow(currentPos, direction);
     }
 }
 
@@ -484,9 +511,6 @@ void MyFrame::ScrollUpperWindow()
     for (int i = 0; i != textctrls.size(); i++)
         textctrls[i]->SetPosition(wxPoint(baseX + TEXT_WIDTH + (i / 4) * TEXTCTRL_WIDTH,
             textctrls[i]->GetPosition().y));
-
-    Refresh();
-    Update();
 }
 
 void MyFrame::ScrollLowerWindow()
@@ -505,6 +529,9 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
 
         upperScroll->SetThumbPosition(upperScroll->GetThumbPosition() - direction);
         ScrollUpperWindow();
+
+        Refresh();
+        Update();
     }
 }
 
@@ -517,6 +544,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
     pidList.clear();
  
     for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
+
         std::string tempPid = textctrls[i]->GetValue().ToStdString();
         double tempArrivaltime;
         textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
@@ -542,11 +570,19 @@ bool MyFrame::InitScheduler()
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
 
-    // Pid 중복 검사
+    // Check duplicate PID
     for (int i = 0; i < pidList.size(); i++) {
+
+        if (pidList[i] == "") {
+
+            wxMessageBox("No empty Process ID allowed", "Test case error", wxICON_INFORMATION);
+            return false;
+        }
         for (int j = i + 1; j < pidList.size(); j++) {
+
             if (pidList[i] == pidList[j]) {
-                wxMessageBox(wxT("Pid가 중복되었습니다."), wxT("PID 중복 검사"), wxICON_INFORMATION);
+
+                wxMessageBox("No duplicate Process ID allowed", "Test case error", wxICON_INFORMATION);
                 return false;
             }
         }
@@ -572,7 +608,7 @@ bool MyFrame::InitScheduler()
     case 3://RR
         if (tq <= 0) {
 
-            wxMessageBox("Time quantum must be more than 0");
+            wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
             return false;
         }
         scheduler.SetAlgorithm(Scheduling::FCFS, false, true);
@@ -590,7 +626,7 @@ bool MyFrame::InitScheduler()
     case 6://Non-preemptive Priority with RR
         if (tq <= 0) {
 
-            wxMessageBox("Time quantum must be more than 0");
+            wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
             return false;
         }
         scheduler.SetAlgorithm(Scheduling::Priority, false, true);
@@ -674,4 +710,18 @@ void MyFrame::SetChartArea()
         prevX = newX;
     }
     chartEnd = prevX;
+}
+
+void MyFrame::SetBaseX(int& baseX, int end)
+{
+    int width = GetClientSize().GetWidth();
+    if (end + 40 <= width)
+        baseX = 20;
+    else {
+
+        if (baseX > 20)
+            baseX = 20;
+        else if (baseX < width - end - 20)
+            baseX = width - end - 20;
+    }
 }
