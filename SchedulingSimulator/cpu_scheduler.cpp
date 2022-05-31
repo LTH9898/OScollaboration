@@ -3,11 +3,14 @@
 
 void CpuScheduler::StepForward()
 {
+
 	if (!isRunning) {
 
 		if (!pQ)
 			return;
+
 		if (pQ->Empty() && wQ.Empty()) {
+
 
 			pQ = nullptr;
 			return;
@@ -21,11 +24,13 @@ void CpuScheduler::StepForward()
 	}
 
 
+
 	// Dispatch process from waitingQueue to CPU
 	if (!wQ.Empty()) {
 
 		// Preemptive
 		if (isPreemptive) {
+
 			/*currentProcess = wQ.Top();
 			wQ.Pop();
 			double delta;
@@ -121,12 +126,16 @@ void CpuScheduler::StepForward()
 	}
 
 
+
+
 	// Process queue to waiting queue
 	while (!pQ->Empty() && time >= pQ->Top().GetArrivalTime()) {
 
 		wQ.Push(pQ->Top());
 		pQ->Pop();
 	}
+
+
 
 	
 	// push to Gantt chart
@@ -140,7 +149,9 @@ void CpuScheduler::StepForward()
 			ganttChart.emplace_back(currentProcess.GetPid(), time);
 	}
 
+
 	if (pQ->Empty() && wQ.Empty()) {
+
 
 		isRunning = false;
 		pQ = nullptr;

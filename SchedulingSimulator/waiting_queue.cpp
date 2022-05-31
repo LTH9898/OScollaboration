@@ -15,6 +15,7 @@ void WaitingQueue::SetAlgorithm(Scheduling algorithm)
 		fp = nullptr;
 }
 
+
 void WaitingQueue::Push(const Process& newProcess)
 {
 	for (auto iter = data.cbegin(); iter != data.cend(); iter++) {
