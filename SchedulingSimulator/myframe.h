@@ -17,13 +17,11 @@
 
 enum
 {
-
     ID_New = 1,
     ID_Open,
     ID_Save,
     ID_SaveAs,
 
-    BUTTON_TEST,
     BUTTON_CREATE,
     BUTTON_DELETE,
     BUTTON_CLEAR,
@@ -45,7 +43,6 @@ public:
 
 private:
     // Events
-    void OnResult(wxCommandEvent& event);
     // File events
     void OnNew(wxCommandEvent& event)
         { currentFilePath = ""; _ClearProcessBlock(); }
@@ -62,16 +59,12 @@ private:
         { _ClearProcessBlock(); }
         void _ClearProcessBlock();
     void OnUpperScroll(wxScrollEvent& event)
-        { ScrollUpperWindow(); }
+        { ScrollUpperWindow(); Refresh(); Update(); }
     // Lower window events
     void RunScheduler(wxCommandEvent& event);
     void StepScheduler(wxCommandEvent& event);
     void ResetScheduler(wxCommandEvent& event)
         { scheduler.Reset(); Refresh(); Update(); }
-    void OnLowerScroll(wxScrollEvent& event)
-    {
-        ScrollLowerWindow();
-    }
 
     // Main window event
     void OnPaint(wxPaintEvent& event);
@@ -89,27 +82,24 @@ private:
     void DragUpperWindow(const wxPoint& currentPos, int direction);
     // Lower window functions
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
-    void SetLowerScroll();
-    void ScrollLowerWindow();
-    //void DragLowerWindow();
     bool InitScheduler();
     void InitColorTable();
     void AllocateColor();
     void SetChartArea();
-    //void DragLowerWindow(wxPoint currentPos, wxPoint direction);
+    void SetBaseX(int& baseX, int end);
+    // Result
+    void ShowResult();
 
 
     // Private variables
     wxString currentFilePath;
 
     std::vector<wxStaticText*> texts;
-
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
     wxScrollBar* lowerScroll;
     wxChoice* choiceAlgorithms;
-    wxGrid* wxgrid;
     
     CpuScheduler scheduler;
 #define TABLE_NUM 6
@@ -121,6 +111,8 @@ private:
     std::vector<int> chartWidth;
     std::vector<int> timeX;
     std::vector<int> pidX;
+
+    wxGrid* wxgrid;
 
     int blockSize;
     int lowerWindowX;
