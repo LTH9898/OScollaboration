@@ -1,38 +1,37 @@
-#include "myframe.h"
+﻿#include "myframe.h"
 
 
 MyFrame::MyFrame()
-    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0)
+    : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0), currentFilePath("")
 {
-    // MyFrame 초기화
-    SetMinSize(wxSize(512, 512));
+    // Initialize MyFrame
+    SetMinSize(wxSize(512, 560));
     SetBackgroundColour(*wxWHITE);
     CreateStatusBar();
     wxInitAllImageHandlers();
     InitColorTable();
 
 
-    // 상단 메뉴바
+    // Menu bar
     wxMenu* menuFile = new wxMenu;
-    menuFile->Append(ID_Open, _T("&열기\tCtrl-O"));
-    menuFile->Append(ID_Save, _T("&저장\tCtrl-S"));
-    menuFile->Append(ID_SaveAs, _T("&다른 이름으로 저장\tCtrl-Shift-S"));
+    menuFile->Append(ID_New, _T("&New\tCtrl-N"));
+    menuFile->Append(ID_Open, _T("&Open\tCtrl-O"));
+    menuFile->Append(ID_Save, _T("&Save\tCtrl-S"));
+    menuFile->Append(ID_SaveAs, _T("&Save As\tCtrl-Shift-S"));
 
     wxMenuBar* menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, _T("&파일"));
+    menuBar->Append(menuFile, _T("&File"));
     SetMenuBar(menuBar);
 
 
-    // 상단 window
-    // 프로세스 관리 버튼
+    // Upeer window
+    // Process button
     wxSize btnSize = wxSize(BUTTON_WIDTH, BUTTON_HEIGHT);
     new wxButton(this, BUTTON_CREATE, _T("Create"), wxPoint(20, 5), btnSize);
     new wxButton(this, BUTTON_DELETE, _T("Delete"), wxPoint(30 + BUTTON_WIDTH, 5), btnSize);
     new wxButton(this, BUTTON_CLEAR, _T("Clear"), wxPoint(40 + 2 * BUTTON_WIDTH, 5), btnSize);
 
-
-    // 프로세스 입력 창
-
+    // Process input
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     texts.emplace_back(new wxStaticText(this, wxID_ANY, _T("Time Quantum "), wxPoint(10, 45), textSize, style));
@@ -47,11 +46,11 @@ MyFrame::MyFrame()
    
 
 
-    // 하단 window
+    // Lower window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
     wqY = lowerWindowY + 70 + CHART_HEIGHT + 35;
 
-    // schedular ����
+    // Schedular choice
     wxString algorithms[SIZEOF_ALGORITHMS] =
     {
         _T("FCFS"),
@@ -80,11 +79,9 @@ MyFrame::MyFrame()
     new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
 
 
-
-
-
     // Event
     // File events
+    Bind(wxEVT_MENU, &MyFrame::OnNew, this, ID_New);
     Bind(wxEVT_MENU, &MyFrame::OnOpen, this, ID_Open);
     Bind(wxEVT_MENU, &MyFrame::OnSave, this, ID_Save);
     Bind(wxEVT_MENU, &MyFrame::OnSaveAs, this, ID_SaveAs);
@@ -105,9 +102,6 @@ MyFrame::MyFrame()
     Bind(wxEVT_SIZE, &MyFrame::OnWindowSize, this);
     Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
     Bind(wxEVT_MOTION, &MyFrame::OnMotion, this);
-
-    //
-    DrawGantChart();
 }
 
 
@@ -116,27 +110,98 @@ MyFrame::MyFrame()
 void MyFrame::OnOpen(wxCommandEvent& event)
 {
     wxFileDialog openFileDialog(this, _("Open Test case file"), "", "",
-        "Process blocks (*.pcb)|*.pcb", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-
+        "Test case (*.tc)|*.tc", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (openFileDialog.ShowModal() == wxID_CANCEL)
         return;
-    wxFileInputStream input_stream(openFileDialog.GetPath());
 
-    if (!input_stream.IsOk()) {
-
+    std::ifstream ifs(openFileDialog.GetPath().utf8_string());
+    if (!ifs.is_open()) {
+    
         wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
         return;
     }
+
+    // read string from ifstream
+    auto read = [&](std::ifstream& ifs) {
+
+        std::string input;
+        ifs >> input;
+        input.pop_back();
+        return input;
+    };
+
+    // Clear textctrls
+    _ClearProcessBlock();
+    // Time quantum
+    textctrlTQ->SetValue(read(ifs));
+    // Number of process
+    blockSize = std::stoul(read(ifs));
+
+    // Create test case
+    for (int i = 0; i != blockSize; i++) {
+
+        wxSize ctrlSize = wxSize(TEXTCTRL_WIDTH, TEXT_HEIGHT);
+        for (int j = 0; j != 4; j++) {
+
+            textctrls.emplace_back(new wxTextCtrl(this, wxID_ANY, read(ifs),
+                CreateBlockPos(j, i), ctrlSize, wxBORDER_SIMPLE));
+        }
+    }
+    
+    currentFilePath = openFileDialog.GetPath();
+    ifs.close();
+    SetUpperScroll();
 }
 
 void MyFrame::OnSave(wxCommandEvent& event)
 {
-    wxMessageBox("Save : nop");
+    // If currentFilePath is empty, save as
+    if (currentFilePath == "") {
+
+        _OnSaveAs();
+        return;
+    }
+
+    std::ofstream ofs(currentFilePath.utf8_string());
+    if (!ofs.is_open()) {
+
+        wxLogError("Cannot save file '%s'.", currentFilePath);
+        return;
+    }
+
+
+    ofs << textctrlTQ->GetValue().utf8_string() + ";" << std::endl;
+    ofs << blockSize << ";" << std::endl;
+    for (auto elem : textctrls)
+        ofs << elem->GetValue().utf8_string() + ";" << std::endl;
+
+    ofs.close();
+    SetUpperScroll();
 }
 
-void MyFrame::OnSaveAs(wxCommandEvent& event)
+void MyFrame::_OnSaveAs()
 {
-    wxMessageBox("Save As : nop");
+    wxFileDialog saveFileDialog(this, _("Save Test case file"), "", "",
+        "Test case (*.tc)|*.tc", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (saveFileDialog.ShowModal() == wxID_CANCEL)
+        return;
+
+    std::ofstream ofs(saveFileDialog.GetPath().utf8_string());
+    if (!ofs.is_open()) {
+
+        wxLogError("Cannot save file '%s'.", saveFileDialog.GetPath());
+        return;
+    }
+
+
+    ofs << textctrlTQ->GetValue().utf8_string() + ";" << std::endl;
+    ofs << blockSize << ";" << std::endl;
+    for (auto elem : textctrls)
+        ofs << elem->GetValue().utf8_string() + ";" << std::endl;
+
+    currentFilePath = saveFileDialog.GetPath();
+    ofs.close();
+    SetUpperScroll();
 }
 
 
@@ -146,7 +211,7 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
 
-        wxMessageBox(_T("프로세스의 최대 생성 개수를 초과하였습니다"));
+        wxMessageBox(_T("Exceeding the maximum number of processes"));
         return;
     }
 
@@ -177,12 +242,13 @@ void MyFrame::DeleteProcessBlock(wxCommandEvent& event)
     SetUpperScroll();
 }
 
-void MyFrame::ClearProcessBlock(wxCommandEvent& event)
+void MyFrame::_ClearProcessBlock()
 {
     for (auto elem : textctrls)
         delete elem;
     textctrls.clear();
     blockSize = 0;
+    textctrlTQ->SetValue("");
 
     SetUpperScroll();
 }
@@ -216,7 +282,7 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     Update();
 }
 
-void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 method , wxpaitDC의 경우 OnPaint안에서만 수행 가능
+void MyFrame::OnPaint(wxPaintEvent& event)
 
 {
     wxSize size = GetClientSize();
@@ -253,7 +319,7 @@ void MyFrame::OnPaint(wxPaintEvent& event) // 위아래 나누는 bar그리는 m
         // Draw separator
         dc.SetPen(*wxBLACK_PEN);
         dc.SetBrush(*wxBLACK_BRUSH);
-        dc.DrawRectangle(0, wqY - 2, size.GetX(), 2);
+        dc.DrawRectangle(0, wqY - 1, size.GetX(), 2);
 
 
         // Draw waiting queue
@@ -354,7 +420,7 @@ void MyFrame::DragUpperWindow(const wxPoint& currentPos, int direction)
 
 std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
 {
-    auto pQ = CreateProcessQueue();
+    auto pQ = std::make_unique<ProcessQueue>();
     pidList.clear();
  
     for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
@@ -371,13 +437,13 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         tempBursttime = tempBursttime < 0 ? 0 : tempBursttime;
         textctrls[i + 2]->SetValue(wxString::FromDouble(tempBursttime));
 
-        pQ->emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
+        pQ->Emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
         pidList.push_back(tempPid);
     }
     return pQ;
 }
 
-bool MyFrame::InitScheduler()       // �ߺ��Ǵ� PID �˻縦 �߰��ؾ� ��
+bool MyFrame::InitScheduler()
 {
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
@@ -430,7 +496,6 @@ bool MyFrame::InitScheduler()       // �ߺ��Ǵ� PID �˻縦 �߰��
         break;
     }
 
-    // process queue�� PID���� color code �Ҵ�
     AllocateColor();
     return true;
 }
@@ -497,7 +562,6 @@ void MyFrame::SetChartArea()
         chartWidth.push_back(width);
         timeX.push_back(newX - GetTextExtent(wxString::FromDouble(elem.second, 1)).GetWidth() / 2);
         
-        // pid�� ��� ���
         int pidWidth = GetTextExtent(elem.first != "" ? elem.first : "IDLE").GetWidth();
         int space = (width - pidWidth) / 2;
         pidX.push_back(prevX + (space >= 1 ? space : 1));
@@ -506,29 +570,3 @@ void MyFrame::SetChartArea()
     }
     chartEnd = prevX;
 }
-
-void MyFrame::DrawGantChart() {
-    
-    
-    //std::list<std::pair<std::string, int>> GantChart = cs.GetGantthandler;
-
-
-    //임시 GantChart 
-    std::list<std::pair<std::string, int>> tempGant;
-    std::list<std::pair<std::string, int>>::iterator it;
-
-    for (int i = 1; i < 8; i++) {
-        tempGant.push_back(make_pair("Pid " + std::to_string(i), i));
-    }
-
-
-    long style = wxALIGN_CENTER | wxBORDER_SIMPLE;
-    int Xpos = 10;
-    int Ypos = 360;
-    int SecSize = 30;
-    for (it = tempGant.begin(); it != tempGant.end(); it++) {
-       gant.emplace_back(new wxStaticText(this, wxID_ANY, it->first.c_str(), wxPoint(Xpos, Ypos), wxSize(SecSize * it->second, TEXT_HEIGHT * 2), style));
-       Xpos += (SecSize * it->second);
-    }
-}
-

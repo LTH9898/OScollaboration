@@ -9,13 +9,15 @@
 #include <algorithm>
 #include <random>
 #include <map>
+#include <fstream>
 #include "cpu_scheduler.h"
 
 
 
 enum
 {
-    ID_Open = 1,
+    ID_New = 1,
+    ID_Open,
     ID_Save,
     ID_SaveAs,
 
@@ -40,13 +42,20 @@ public:
 private:
     // Events
     // File events
+    void OnNew(wxCommandEvent& event)
+        { currentFilePath = ""; _ClearProcessBlock(); }
     void OnOpen(wxCommandEvent& event);
     void OnSave(wxCommandEvent& event);
-    void OnSaveAs(wxCommandEvent& event);
+    void OnSaveAs(wxCommandEvent& event)
+        { _OnSaveAs(); }
+        void _OnSaveAs();
+
     // Upper window events
     void CreateProcessBlock(wxCommandEvent& event);
     void DeleteProcessBlock(wxCommandEvent& event);
-    void ClearProcessBlock(wxCommandEvent& event);
+    void ClearProcessBlock(wxCommandEvent& event)
+        { _ClearProcessBlock(); }
+        void _ClearProcessBlock();
     void OnUpperScroll(wxScrollEvent& event)
         { ScrollUpperWindow(); }
     // Lower window events
@@ -83,13 +92,6 @@ private:
 
     std::vector<wxStaticText*> texts;
 
-
-    /////////////
-
-    std::vector<wxStaticText*> gant;
-    void DrawGantChart();
-
-    ////////////////
     wxTextCtrl* textctrlTQ;
     std::vector<wxTextCtrl*> textctrls;
     wxScrollBar* upperScroll;
