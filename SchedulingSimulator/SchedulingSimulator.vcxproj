@@ -152,14 +152,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="myframe.cpp" />
     <ClCompile Include="process.cpp" />
-    <ClCompile Include="ResultDialog.cpp" />
     <ClCompile Include="waiting_queue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cpu_scheduler.h" />
     <ClInclude Include="myframe.h" />
     <ClInclude Include="process.h" />
-    <ClInclude Include="ResultDialog.h" />
     <ClInclude Include="waiting_queue.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

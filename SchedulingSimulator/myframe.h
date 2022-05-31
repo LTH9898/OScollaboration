@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <random>
 #include <map>
+#include <wx/grid.h>
 #include "cpu_scheduler.h"
 
 
@@ -38,7 +39,7 @@ class MyFrame : public wxFrame
 {
 public:
     MyFrame();
-    
+        
 
 private:
     // Events
@@ -81,7 +82,7 @@ private:
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
     void SetLowerScroll();
     void ScrollLowerWindow();
-    void DragLowerWindow();
+    //void DragLowerWindow();
     bool InitScheduler();
     void InitColorTable();
     void AllocateColor();
@@ -106,7 +107,8 @@ private:
     wxScrollBar* upperScroll;
     wxScrollBar* lowerScroll;
     wxChoice* choiceAlgorithms;
-
+    wxGrid* wxgrid;
+    
     CpuScheduler scheduler;
 #define TABLE_NUM 6
 #define CODE_BASE 'A'

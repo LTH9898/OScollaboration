@@ -1,5 +1,5 @@
 #include "myframe.h"
-#include "ResultDialog.h"
+
 
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(0), wqX(0)
@@ -21,6 +21,9 @@ MyFrame::MyFrame()
     wxMenuBar* menuBar = new wxMenuBar;
     menuBar->Append(menuFile, _T("&FILE"));
     SetMenuBar(menuBar);
+
+    
+
 
 
     // 
@@ -46,9 +49,9 @@ MyFrame::MyFrame()
     // Create Scrollbar for upper window
     upperScroll = new wxScrollBar(this, SCROLL_UPPER, wxPoint(0, 200));
     lowerScroll = new wxScrollBar(this, SCROLL_LOWER, wxPoint(0, 400));
-   
+    
 
-
+    
     // 
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
     wqY = lowerWindowY + 70 + CHART_HEIGHT + 35;
@@ -82,7 +85,8 @@ MyFrame::MyFrame()
     new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
     new wxButton(this, BUTTON_TEST, _T("Result"), wxPoint(200 + (BUTTON_HEIGHT + 10) * 6, lowerWindowY + 5), btnSize);
 
-
+    
+    
 
 
     // Event
@@ -126,10 +130,40 @@ MyFrame::MyFrame()
 ////////////////////////////////////////////////////////////////////////
 void MyFrame::OnResult(wxCommandEvent& event)
 {
-    ResultDialog dlg(this, wxID_ANY, _("Result"));
+    wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
+    long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
+    wxDialog* dialog = new wxDialog;
+    dialog->Create(NULL, wxID_ANY,
+        "Result",
+        wxDefaultPosition,
+        wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE,
+        wxASCII_STR(wxDialogNameStr));
 
-    dlg.ShowModal();
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+    wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(400, 300));
+    
+
+    //create Button field
+    //wxSizer* buttonSizer = dialog->CreateButtonSizer(wxOK | wxCANCEL);
+    //mainSizer->Add(buttonSizer);
+
+    /*for (auto i = 0; i < pidList.size(); i++)
+    {
+        dialog->CreateTextSizer(pidList[i]);
+    }*/
+    
+
    
+    
+    SetSizer(mainSizer);
+    SetMinSize(wxSize(400, 100));
+    
+   
+    
+    dialog->ShowModal();
+    
 }
 ////////////////////////////////////////////////////////////////////////////
 
