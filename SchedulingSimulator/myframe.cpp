@@ -459,6 +459,8 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
 {
     auto pQ = std::make_unique<ProcessQueue>();
     pidList.clear();
+    arrivalTimeList.clear();
+    burstTimeList.clear();
  
     for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
 
@@ -471,13 +473,14 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
 
         tempArrivaltime = tempArrivaltime < 0 ? 0 : tempArrivaltime;
-        textctrls[i + 1]->SetValue(wxString::FromDouble(tempArrivaltime));
+        textctrls[i + 1]->SetValue(wxString::FromDouble(tempArrivaltime));  
         tempBursttime = tempBursttime < 0 ? 0 : tempBursttime;
         textctrls[i + 2]->SetValue(wxString::FromDouble(tempBursttime));
 
         pQ->Emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
         pidList.push_back(tempPid);
         arrivalTimeList.push_back(tempArrivaltime);
+        burstTimeList.push_back(tempBursttime);
     }
     return pQ;
 }

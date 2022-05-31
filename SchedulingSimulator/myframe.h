@@ -102,11 +102,13 @@ private:
     wxChoice* choiceAlgorithms;
     
     CpuScheduler scheduler;
+    std::vector<std::string> pidList;
+    std::vector<double> arrivalTimeList;
+    std::vector<double> burstTimeList;
+
 #define TABLE_NUM 6
 #define CODE_BASE 'A'
     char colorTable[TABLE_NUM * TABLE_NUM * TABLE_NUM][3];
-    std::vector<std::string> pidList;
-    std::vector<double> arrivalTimeList;
     std::map<std::string, std::string> colorList;
     std::vector<int> chartX;
     std::vector<int> chartWidth;
