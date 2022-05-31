@@ -13,10 +13,10 @@ enum class Scheduling
 };
 
 
-class waitingQueue
+class WaitingQueue
 {
 public:
-	waitingQueue() : fp(nullptr), algorithm(Scheduling::None) {}
+	WaitingQueue() : fp(nullptr), algorithm(Scheduling::None) {}
 	void SetAlgorithm(Scheduling algorithm);
 
 	Scheduling GetAlgorithm() const
@@ -26,24 +26,29 @@ public:
 
 	const Process& Top() const
 		{ return data.front(); }
-	bool Empty()
+	bool Empty() const
 		{ return data.empty(); }
 	void Clear()
 		{ data.clear(); }
-	void Push(const Process& newProcess)
-		{ (this->*fp)(newProcess); }
+	void Push(const Process& newProcess);
 	void Pop()
 		{ data.erase(data.begin()); }
+
+	bool HasMorePriority(const Process& lhs, const Process& rhs) const
+		{ return (this->*fp)(lhs, rhs); }
+
 
 private:
 	std::vector<Process> data;
 	Scheduling algorithm;
-	void (waitingQueue::*fp)(const Process& newProcess);
+	bool (WaitingQueue::*fp)(const Process&, const Process&) const;
 	
-	void FCFS(const Process& newProcess)
-		{ data.push_back(newProcess); }
-	void SJF(const Process& newProcess);
-	void Priority(const Process& newProcess);
+	bool FCFS(const Process& lhs, const Process& rhs) const
+		{ return false; }
+	bool SJF(const Process& lhs, const Process& rhs) const
+		{ return lhs.GetBurstTime() < rhs.GetBurstTime();	}
+	bool Priority(const Process& lhs, const Process& rhs) const
+		{ return lhs.GetPriority() < rhs.GetPriority(); }
 };
 
 #endif

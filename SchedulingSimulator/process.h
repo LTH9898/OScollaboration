@@ -26,27 +26,18 @@ public:
 	unsigned GetPriority() const { return priority; }
 
 	Process& operator=(const Process& rhs);
-
-	// 
 	Process& operator-=(const double time);
 	Process& operator+=(const double time);
-	const Process operator-(const double time);
-	const Process operator+(const double time);
+	Process operator-(const double time) const;
+	Process operator+(const double time) const;
 
 private:
-	std::string pid;		
-	double arrivalTime;		//
-	double burstTime;		// 
-	unsigned priority;		// 
+
+	std::string pid;
+	double arrivalTime;
+	double burstTime;
+	unsigned priority;
 };
-
-
-auto CMP_PROCESS = [](const Process& lhs, const Process& rhs) { return lhs.GetArrivalTime() > rhs.GetArrivalTime(); };
-
-using ProcessQueue = std::priority_queue<Process, std::vector<Process>, decltype(CMP_PROCESS)>;
-
-std::unique_ptr<ProcessQueue> CreateProcessQueue()
-	{ return std::make_unique<ProcessQueue>(CMP_PROCESS); }
 
 using GanttChart = std::list<std::pair<std::string, double>>;
 

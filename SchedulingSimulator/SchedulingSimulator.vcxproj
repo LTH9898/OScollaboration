@@ -158,6 +158,7 @@
     <ClInclude Include="cpu_scheduler.h" />
     <ClInclude Include="myframe.h" />
     <ClInclude Include="process.h" />
+    <ClInclude Include="process_queue.h" />
     <ClInclude Include="waiting_queue.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
