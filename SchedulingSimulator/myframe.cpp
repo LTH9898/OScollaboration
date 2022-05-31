@@ -1,5 +1,6 @@
 ﻿#include "myframe.h"
-
+#include "set"
+#include "algorithm"
 
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(20), wqX(0), currentFilePath("")
@@ -477,6 +478,10 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
 
         pQ->Emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
         pidList.push_back(tempPid);
+
+
+        arrivalList.push_back(make_pair(tempPid, tempArrivaltime));
+        burstTimeList.push_back(make_pair(tempPid, tempBursttime));
     }
     return pQ;
 }
@@ -648,6 +653,7 @@ void MyFrame::SetBaseX(int& baseX, int end)
 ////////////////////////////////////////////////////////////////////////
 void MyFrame::ShowResult()
 {
+
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
     wxDialog* dialog = new wxDialog;
@@ -670,9 +676,13 @@ void MyFrame::ShowResult()
     //Average Row name Change
     grid->SetRowLabelValue(pidList.size(), "Average");
     grid->SetRowSize(pidList.size(), 40);
-    for (int i = 0; i < pidList.size(); i++)
+    
+    GanttChart TAList = GetWaitingTime();
+    GanttChart::const_iterator it;
+    int i;
+    for (i=0, it = TAList.begin(); it!=TAList.end(); i++, it++)
     {
-        grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
+        grid->SetRowLabelValue(i, (*it).first + " : " + std::to_string((*it).second));
         grid->SetRowSize(i, 40);
     }
 
@@ -702,4 +712,100 @@ void MyFrame::ShowResult()
 
     dialog->ShowModal();
 }
+
+
+GanttChart MyFrame::GetTurnAroundTime() const
+{
+    GanttChart TAList;
+    GanttChart ganttChart = scheduler.GetGantthandler();
+    std::set<std::string> s;
+    GanttChart::const_reverse_iterator rit;
+    int cnt;
+    for (rit = ganttChart.rbegin(), cnt = 0; rit != ganttChart.rend(); rit++, cnt< pidList.size()) {
+        if (s.find(rit->first) == s.end()) {
+            s.insert(rit->first);
+
+            double temp = rit->second;
+            for (int i = 0; i < arrivalList.size(); i++) {
+                if (arrivalList[i].first == rit->first) {
+                    temp -= arrivalList[i].second;
+                    break;
+                }
+            }
+            TAList.push_back(make_pair(rit->first, temp));
+            cnt++;
+        }
+    }
+
+    return TAList;
+}
+
+
+
+
+GanttChart  MyFrame::GetWaitingTime() const
+{
+
+    GanttChart WTList;
+    GanttChart ganttChart = scheduler.GetGantthandler();
+    std::set<std::string> s;
+    GanttChart::const_reverse_iterator rit;
+    int cnt;
+    for (rit = ganttChart.rbegin(), cnt = 0; rit != ganttChart.rend(); rit++, cnt < pidList.size()) {
+        if (s.find(rit->first) == s.end()) {
+            s.insert(rit->first);
+
+            double temp = rit->second;
+            for (int i = 0; i < burstTimeList.size(); i++) {
+                if (burstTimeList[i].first == rit->first) {
+                    temp -= burstTimeList[i].second;
+                    break;
+                }
+            }
+            for (int i = 0; i < arrivalList.size(); i++) {
+                if (arrivalList[i].first == rit->first) {
+                    temp -= arrivalList[i].second;
+                    break;
+                }
+            }
+            WTList.push_back(make_pair(rit->first, temp));
+            cnt++;
+        }
+    }
+
+    return WTList;
+}
+
+
+GanttChart  MyFrame::GetResponseTime() const
+{
+
+    GanttChart RTList;
+    GanttChart ganttChart = scheduler.GetGantthandler();
+    std::set<std::string> s;
+    GanttChart::const_iterator it;
+    int cnt;
+    for (it = ganttChart.begin(), cnt = 0; it != ganttChart.end(); it++, cnt < pidList.size()) {
+        if (s.find(it->first) == s.end()) {
+            s.insert(it->first);
+
+            double temp = it->second;
+            if (it != ganttChart.begin()) {
+                temp = (--it)->second;
+                ++it;
+            }
+            for (int i = 0; i < arrivalList.size(); i++) {
+                if (arrivalList[i].first == it->first) {
+                    temp -= arrivalList[i].second;
+                    break;
+                }
+            }
+            RTList.push_back(make_pair(it->first, temp));
+            cnt++;
+        }
+    }
+
+    return RTList;
+}
+
 ////////////////////////////////////////////////////////////////////////////

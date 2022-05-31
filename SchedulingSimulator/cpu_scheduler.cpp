@@ -1,5 +1,7 @@
 #include "cpu_scheduler.h"
-
+#include <set>
+#include <iostream>
+#include <algorithm>
 
 void CpuScheduler::StepForward()
 {
@@ -165,3 +167,5 @@ void CpuScheduler::Reset()
 	wQ.Clear();
 	ganttChart.clear();
 }
+
+
