@@ -157,6 +157,8 @@ void MyFrame::OnResult(wxCommandEvent& event)
         grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
         grid->SetRowSize(i, 40);
     }
+
+    grid->SetCellValue(0, 0, std::to_string(timeX[0]));
      
     for (int i = 0; i < 4; i++)
     {
