@@ -78,6 +78,7 @@ MyFrame::MyFrame()
     new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_STEP, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
+    new wxButton(this, BUTTON_COMPARE, "Compare", wxPoint(200 + (BUTTON_HEIGHT + 10) * 3 + 20, lowerWindowY + 5), btnSize);
 
 
     // File events
@@ -96,6 +97,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_BUTTON, &MyFrame::RunScheduler, this, BITMAPBTN_RUN);
     Bind(wxEVT_BUTTON, &MyFrame::StepScheduler, this, BITMAPBTN_STEP);
     Bind(wxEVT_BUTTON, &MyFrame::ResetScheduler, this, BITMAPBTN_RESET);
+    Bind(wxEVT_BUTTON, &MyFrame::CmpPerformance, this, BUTTON_COMPARE);
 
     // Main window event
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
@@ -300,6 +302,182 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
         ShowResult();
 }
 
+/////////////////////////////////////////////////
+void MyFrame::CmpPerformance(wxCommandEvent& event)
+{
+    wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
+    wxDialog* dialog = new wxDialog(this, wxID_ANY, "Compare Performance",
+        wxDefaultPosition, wxSize(1020, 360));
+
+    //wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+    wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(1200, 800));
+    grid->CreateGrid(7, 4);
+
+    grid->SetColLabelValue(0, "Average Waiting Time");
+    grid->SetColLabelValue(1, "Average Response Time");
+    grid->SetColLabelValue(2, "Average Turnaround Time");
+    grid->SetColLabelValue(3, "Longest Turnaround Time");
+
+    grid->SetRowLabelValue(0, "FCFS");
+    grid->SetRowLabelValue(1, "SJF");
+    grid->SetRowLabelValue(2, "SRTF");
+    grid->SetRowLabelValue(3, "Round Robin");
+    grid->SetRowLabelValue(4, "Non-preemptive Priority");
+    grid->SetRowLabelValue(5, "Preemptive Priority");
+    grid->SetRowLabelValue(6, "Preemptive Priority with RR");
+
+    grid->SetRowLabelSize(200);
+    grid->SetColLabelSize(40);
+    for (int i = 0; i < 7; i++)
+        grid->SetRowSize(i, 40);
+    for (int i = 0; i < 4; i++)
+        grid->SetColSize(i, 200);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    // Scheduler
+    CpuScheduler sche;
+
+    // Make process queue
+    ProcessQueue pQ;
+    std::vector<std::string> pidList;
+    std::vector<double> arrivalTimeList;
+    std::vector<double> burstTimeList;
+
+    for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
+
+        std::string tempPid = textctrls[i]->GetValue().ToStdString();
+        double tempArrivaltime;
+        textctrls[i + 1]->GetValue().ToDouble(&tempArrivaltime);
+        double tempBursttime;
+        textctrls[i + 2]->GetValue().ToDouble(&tempBursttime);
+        unsigned tempPriority;
+        textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
+
+        tempArrivaltime = tempArrivaltime < 0 ? 0 : tempArrivaltime;
+        textctrls[i + 1]->SetValue(wxString::FromDouble(tempArrivaltime));
+        tempBursttime = tempBursttime < 0 ? 0 : tempBursttime;
+        textctrls[i + 2]->SetValue(wxString::FromDouble(tempBursttime));
+
+        pQ.Emplace(tempPid, tempArrivaltime, tempBursttime, tempPriority);
+        pidList.push_back(tempPid);
+        arrivalTimeList.push_back(tempArrivaltime);
+        burstTimeList.push_back(tempBursttime);
+    }
+    // Check time quantum
+    double tq;
+    textctrlTQ->GetValue().ToDouble(&tq);
+    if (tq <= 0) {
+
+        wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
+        return;
+    }
+    sche.SetTimeQuantum(tq);
+
+    // cellTable [column][row]
+    std::vector<double> cellTable[4];
+
+
+
+    // For 7 algorithms
+    for (int idx = 0; idx != 7; idx++) {
+        
+        // Initailize scheduler
+        // Set process queue
+        sche.SetProcessQueue(std::make_unique<ProcessQueue>(pQ));
+        auto& row = algorithmTable[idx];
+        sche.SetAlgorithm(std::get<0>(row), std::get<1>(row), std::get<2>(row));
+        
+        // Run scheduler
+        sche.StepForward();
+        while (sche.IsRunning())
+            sche.StepForward();
+
+
+
+        // Display result
+        // container
+        std::vector<double> turnaroundList;
+        auto& gantt = sche.GetGantthandler();
+        double AverageTurnaroundTime = 0;
+        double AverageWaitingTime = 0;
+        double AverageResponseTime = 0;
+        int size = blockSize;
+
+        // Get the WaitingTime, TurnaroundTime
+        for (int i = 0; i != size; i++) {
+
+            for (auto iter = gantt.crbegin(); iter != gantt.crend(); iter++) {
+
+                if (iter->first == pidList[i]) {
+
+                    turnaroundList.push_back(iter->second - arrivalTimeList[i]);
+                    AverageWaitingTime += iter->second - arrivalTimeList[i] - burstTimeList[i];
+                    break;
+                }
+            }
+        }
+
+        // Get the ResponseTime IN PROGRESS...
+        for (int i = 0; i != size; i++)
+        {
+            double lastFinishedTime = 0;
+
+            for (auto iter = gantt.cbegin(); iter != gantt.cend(); iter++) {
+
+                if (iter->first == pidList[i]) { // compare value with the rows, if find same ,do this
+
+                    AverageResponseTime += lastFinishedTime - arrivalTimeList[i];
+                    break;
+                }
+                //idle :  one loop elapsed but there is no same data with row
+                lastFinishedTime = iter->second;
+            }
+        }
+
+        // Get the AverageTurnaround, AverageWating, AverageResponse Time
+        for (auto elem : turnaroundList)
+            AverageTurnaroundTime += elem;
+        double longest = *std::max_element(turnaroundList.begin(), turnaroundList.end());
+
+        if (size != 0) {
+
+            AverageTurnaroundTime /= size;
+            AverageWaitingTime /= size;
+            AverageResponseTime /= size;
+        }
+
+        cellTable[0].push_back(AverageWaitingTime);
+        cellTable[1].push_back(AverageResponseTime);
+        cellTable[2].push_back(AverageTurnaroundTime);
+        cellTable[3].push_back(longest);
+        grid->SetCellValue(idx, 2, std::to_string(AverageTurnaroundTime));
+        grid->SetCellValue(idx, 0, std::to_string(AverageWaitingTime));
+        grid->SetCellValue(idx, 1, std::to_string(AverageResponseTime));
+        grid->SetCellValue(idx, 3, std::to_string(longest));
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+    // Color yellow to best algorithm
+    for (int j = 0; j != 4; j++) {
+
+        double min = *std::min_element(cellTable[j].begin(), cellTable[j].end());
+
+        for (int i = 0; i != 7; i++)
+            if (cellTable[j][i] <= min)
+                grid->SetCellBackgroundColour(i, j, *wxYELLOW);
+    }
+
+    // Show dialog
+    dialog->ShowModal();
+    delete dialog;
+}
+/////////////////////////////////////////////////
+
+
+
 
 void MyFrame::OnPaint(wxPaintEvent& event)
 {
@@ -491,14 +669,14 @@ bool MyFrame::InitScheduler()
     scheduler.SetProcessQueue(MakeProcessQueue());
 
     // Check duplicate PID
-    for (int i = 0; i < pidList.size(); i++) {
+    for (int i = 0; i != pidList.size(); i++) {
 
         if (pidList[i] == "") {
 
             wxMessageBox("No empty Process ID allowed", "Test case error", wxICON_INFORMATION);
             return false;
         }
-        for (int j = i + 1; j < pidList.size(); j++) {
+        for (int j = i + 1; j != pidList.size(); j++) {
 
             if (pidList[i] == pidList[j]) {
 
@@ -508,53 +686,21 @@ bool MyFrame::InitScheduler()
         }
     }
 
-    double tq;
-    textctrlTQ->GetValue().ToDouble(&tq);
 
-    switch (choiceAlgorithms->GetSelection()) {
+    int index = choiceAlgorithms->GetSelection();
+    auto& row = algorithmTable[index];
+    scheduler.SetAlgorithm(std::get<0>(row), std::get<1>(row), std::get<2>(row));
 
-    case 0://FCFS
-        scheduler.SetAlgorithm(Scheduling::FCFS, false, false);
-        break;
+    if (index == 3 || index == 6) {
 
-    case 1://SJF
-        scheduler.SetAlgorithm(Scheduling::SJF, false, false);
-        break;
-
-    case 2://SRJF
-        scheduler.SetAlgorithm(Scheduling::SJF, true, false);
-        break;
-
-    case 3://RR
+        double tq;
+        textctrlTQ->GetValue().ToDouble(&tq);
         if (tq <= 0) {
 
             wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
             return false;
         }
-        scheduler.SetAlgorithm(Scheduling::FCFS, false, true);
         scheduler.SetTimeQuantum(tq);
-        break;
-
-    case 4://Non-preemptive Priority
-        scheduler.SetAlgorithm(Scheduling::Priority, false, false);
-        break;
-
-    case 5://Preemptive Priority
-        scheduler.SetAlgorithm(Scheduling::Priority, true, false);
-        break;
-
-    case 6://Non-preemptive Priority with RR
-        if (tq <= 0) {
-
-            wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
-            return false;
-        }
-        scheduler.SetAlgorithm(Scheduling::Priority, false, true);
-        scheduler.SetTimeQuantum(tq);
-        break;
-
-    default://Not selected
-        break;
     }
 
     AllocateColor();
@@ -652,21 +798,12 @@ void MyFrame::SetBaseX(int& baseX, int end)
 void MyFrame::ShowResult()
 {
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
-    long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
-    wxDialog* dialog = new wxDialog;
-    dialog->Create(NULL, wxID_ANY,
-        "Result",
-        wxDefaultPosition,
-        wxSize(700, 500),
-        wxDEFAULT_DIALOG_STYLE,
-        wxASCII_STR(wxDialogNameStr));
+    wxDialog* dialog = new wxDialog(this, wxID_ANY, "Result", wxDefaultPosition, wxSize(720, 440));
 
-    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-
+    //wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(500, 300));
 
     grid->CreateGrid(pidList.size() + 1, 3);
-    
     grid->SetColLabelValue(0, "Waiting Time");
     grid->SetColLabelValue(1, "Response Time");
     grid->SetColLabelValue(2, "Turnaround Time");
@@ -674,149 +811,76 @@ void MyFrame::ShowResult()
     grid->SetRowLabelValue(pidList.size(), "Average");
     grid->SetRowSize(pidList.size(), 40);
 
-    auto& gantt = scheduler.GetGantthandler();
+    for (int i = 0; i != pidList.size(); i++) {
 
-    for (int i = 0; i < pidList.size(); i++)
-    {
         grid->SetRowLabelValue(i, pidList[i]);
         grid->SetRowSize(i, 40);
     }
-
     for (int i = 0; i < 3; i++)
-    {
         grid->SetColSize(i, 200);
-    }
-    
 
-   for (int i = 0; i < 3; i++)
-    {
-        grid->SetColSize(i, 200);
-    }
-    //Get the Turnaround Time
-    double AverageWaitingTime;
-    double AverageTurnaroundTime;
-    double AverageResponseTime;
-    std::vector<int> is_calculated(pidList.size());
-    std::vector<int> is_calculated_R(pidList.size());
-    int counter = pidList.size();
-    int counter2 = counter;
-    std::list<std::pair<std::string, double>> gantt_copy_R(gantt);
-    std::list<std::pair<std::string, double>> gantt_copy(gantt);
-    //make copy of gantt
-    std::string temp;
-    while (counter > 0)
-    {
-        for (int i = 0; i < counter2; i++)
-        {
-            if (gantt_copy.back().first == grid->GetRowLabelValue(i).ToStdString() && is_calculated[i] == 0)
-            {
-                grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second - arrivalTimeList[i]));
-                grid->SetCellValue(i, 0, std::to_string(gantt_copy.back().second - arrivalTimeList[i] - burstTimeList[i]));
-                is_calculated[i] = 1;
-                counter--;
-            }
-        }
-        gantt_copy.pop_back();
-    }
 
-    double TotalWaitingTime = 0 ;
-    double TotalTurnaroundTime = 0;
-    double TotalResponseTime = 0;
+    auto& gantt = scheduler.GetGantthandler();
+    double AverageWaitingTime = 0;
+    double AverageTurnaroundTime = 0;
+    double AverageResponseTime = 0;
+    int size = pidList.size();
 
-    // Get the AverageTurnaround Time
+    // Get the WaitingTime, TurnaroundTime
+    for (int i = 0; i != size; i++) {
 
-    for (int i = 0; i < counter2; i++)
-    {
-        double tempTA;
-        grid->GetCellValue(i, 2).ToDouble(&tempTA);
-        TotalTurnaroundTime += tempTA;
-    }
+        for (auto iter = gantt.crbegin(); iter != gantt.crend(); iter++) {
 
-    AverageTurnaroundTime = TotalTurnaroundTime / pidList.size();
+            if (iter->first == pidList[i]) {
 
-    grid->SetCellValue(counter2, 2, std::to_string(AverageTurnaroundTime));
-
-    //Get the AverageWatingTime
-
-    for (int i = 0; i < counter2; i++)
-    {
-        double tempWT;
-        grid->GetCellValue(i, 0).ToDouble(&tempWT);
-        TotalWaitingTime += tempWT;
-    }
-
-    AverageWaitingTime = TotalWaitingTime / pidList.size();
-
-    grid->SetCellValue(counter2, 0, std::to_string(AverageWaitingTime));
-
-    //Get the ResponseTime IN PROGRESS...
-
-    int counter_R = pidList.size();
-    int isFirst = 0;
-    int counter2R = counter_R;
-    double lastFinishedTime = 0;
-
-    
-    while (counter_R > 0)
-    {
-        for (int i = 0; i < counter2R; i++)
-        {
-            if (gantt_copy_R.front().first == grid->GetRowLabelValue(i).ToStdString()) // compare value with the rows, if find same ,do this
-            {
-                // if it is the first element of the ganttchart
-                if (isFirst == 0)
-                {
-                    grid->SetCellValue(i, 1, std::to_string(0));
-                    lastFinishedTime = gantt_copy_R.front().second;
-                    is_calculated_R[i] = 1;
-                    isFirst = 1;
-                    counter_R--;
-                    
-                }
-                 // it is calculated already
-                if (is_calculated_R[i] == 1) {
-                    lastFinishedTime = gantt_copy_R.front().second;
-                   
-                }
-                // it is not calculated..
-                if (is_calculated_R[i] == 0)
-                {
-                    grid->SetCellValue(i, 1, std::to_string(lastFinishedTime - arrivalTimeList[i]));
-                    lastFinishedTime = gantt_copy_R.front().second;
-                    
-                    is_calculated_R[i] = 1;
-                    counter_R--;
-                   
-                }
+                grid->SetCellValue(i, 2, std::to_string(iter->second - arrivalTimeList[i]));
+                grid->SetCellValue(i, 0, std::to_string(iter->second - arrivalTimeList[i] - burstTimeList[i]));
                 break;
             }
-            
-           
-            // one loop checked         
         }
-        //idle :  one loop elapsed but there is no same data with row
-        lastFinishedTime = gantt_copy_R.front().second;
-        gantt_copy_R.pop_front();
     }
 
-    //Get the AverageResponseTime
-
-    for (int i = 0; i < counter2; i++)
+    // Get the ResponseTime IN PROGRESS...
+    for (int i = 0; i != size; i++)
     {
-        double tempRT;
-        grid->GetCellValue(i, 1).ToDouble(&tempRT);
-        TotalResponseTime += tempRT;
+        double lastFinishedTime = 0;
+
+        for (auto iter = gantt.cbegin(); iter != gantt.cend(); iter++) {
+            
+            if (iter->first == pidList[i]) { // compare value with the rows, if find same ,do this
+
+                grid->SetCellValue(i, 1, std::to_string(lastFinishedTime - arrivalTimeList[i]));
+                break;
+            }
+            //idle :  one loop elapsed but there is no same data with row
+            lastFinishedTime = iter->second;
+        }  
     }
 
-    AverageResponseTime = TotalResponseTime / pidList.size();
+    // Get the AverageTurnaround, AverageWating, AverageResponse Time
+    for (int i = 0; i != size; i++) {
 
-    grid->SetCellValue(counter2, 1, std::to_string(AverageResponseTime));
+        double temp;
+        grid->GetCellValue(i, 2).ToDouble(&temp);
+        AverageTurnaroundTime += temp;
+        grid->GetCellValue(i, 0).ToDouble(&temp);
+        AverageWaitingTime += temp;
+        grid->GetCellValue(i, 1).ToDouble(&temp);
+        AverageResponseTime += temp;
+    }
 
+    if (size != 0) {
+        
+        AverageTurnaroundTime /= size;
+        AverageWaitingTime /= size;
+        AverageResponseTime /= size;
+    }
+    grid->SetCellValue(size, 2, std::to_string(AverageTurnaroundTime));
+    grid->SetCellValue(size, 0, std::to_string(AverageWaitingTime));
+    grid->SetCellValue(size, 1, std::to_string(AverageResponseTime));
 
-
-    SetSizer(mainSizer);
-    SetMinSize(wxSize(700, 100));
 
     dialog->ShowModal();
+    delete dialog;
 }
 ////////////////////////////////////////////////////////////////////////////

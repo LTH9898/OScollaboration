@@ -11,7 +11,6 @@ void CpuScheduler::StepForward()
 
 		if (pQ->Empty() && wQ.Empty()) {
 
-
 			pQ = nullptr;
 			return;
 		}
@@ -24,9 +23,8 @@ void CpuScheduler::StepForward()
 	}
 
 
-
 	// Dispatch process from waitingQueue to CPU
-	if (!wQ.Empty()) {
+	if (!wQ.Empty() || isRoundRobin && currentProcess.GetBurstTime() > 0) {
 
 		// Preemptive
 		if (isPreemptive) {
@@ -59,32 +57,25 @@ void CpuScheduler::StepForward()
 			}
 		}
 
-        // Round-Robin
-        else if (isRoundRobin) {
-			
-			currentProcess = wQ.Top();
+		// Round-Robin
+		else if (isRoundRobin) {
 
-            if (currentProcess.GetBurstTime() > timeQuantum) {
-
-				currentProcess.SetBurstTime(currentProcess.GetBurstTime() - timeQuantum);
-                time += timeQuantum;
-				wQ.Pop();
-				while (!pQ->Empty() && time >= pQ->Top().GetArrivalTime())
-				{
-					wQ.Push(pQ->Top());
-					pQ->Pop();
-				}
+			if (currentProcess.GetBurstTime() > 0)
 				wQ.Push(currentProcess);
-				
-            }
-			else
-			{
+			currentProcess = wQ.Top();
+			wQ.Pop();
+
+			if (currentProcess.GetBurstTime() > timeQuantum) {
+
+				currentProcess -= timeQuantum;
+				time += timeQuantum;
+			}
+			else {
+
 				time += currentProcess.GetBurstTime();
 				currentProcess.SetBurstTime(0);
-				wQ.Pop();
 			}
-                
-        }
+		}
 
 		// Non-preemptive and no time-quantum
 		else {
@@ -102,17 +93,13 @@ void CpuScheduler::StepForward()
 		time = pQ->Top().GetArrivalTime();
 	}
 
-
-
-
+	
 	// Process queue to waiting queue
 	while (!pQ->Empty() && time >= pQ->Top().GetArrivalTime()) {
 
 		wQ.Push(pQ->Top());
 		pQ->Pop();
 	}
-
-
 
 	
 	// push to Gantt chart
@@ -127,8 +114,8 @@ void CpuScheduler::StepForward()
 	}
 
 
-	if (pQ->Empty() && wQ.Empty()) {
-
+	if (pQ->Empty() && wQ.Empty() &&
+		(!isRoundRobin || isRoundRobin && currentProcess.GetBurstTime() <= 0)) {
 
 		isRunning = false;
 		pQ = nullptr;

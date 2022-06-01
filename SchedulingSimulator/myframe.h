@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <random>
 #include <map>
-#include <wx/grid.h>
 #include <fstream>
+#include <wx/grid.h>
 #include "cpu_scheduler.h"
 
 
@@ -27,11 +27,11 @@ enum
     BUTTON_CLEAR,
     SCROLL_UPPER,
     SCROLL_LOWER,
-    
 
     BITMAPBTN_RUN,
     BITMAPBTN_STEP,
     BITMAPBTN_RESET,
+    BUTTON_COMPARE
 };
 
 
@@ -66,6 +66,7 @@ private:
     void StepScheduler(wxCommandEvent& event);
     void ResetScheduler(wxCommandEvent& event)
         { scheduler.Reset(); Refresh(); Update(); }
+    void CmpPerformance(wxCommandEvent& event);
 
     // Main window event
     void OnPaint(wxPaintEvent& event);
@@ -144,6 +145,16 @@ private:
 
         CHART_HEIGHT = 40,
         UNIT_CHART = 30
+    };
+    const std::vector<std::tuple<Scheduling, bool, bool>> algorithmTable =
+    {
+        { Scheduling::FCFS, false, false },     // FCFS
+        { Scheduling::SJF, false, false },      // SJF
+        { Scheduling::SJF, true, false },       // SRTF
+        { Scheduling::FCFS, false, true },      // RR
+        { Scheduling::Priority, false, false }, // Non-preemptive Priority 
+        { Scheduling::Priority, true, false },  // Preemptive Priority
+        { Scheduling::Priority, false, true }   // Non-preemptive Priority with RR
     };
 };
 
