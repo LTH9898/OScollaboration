@@ -31,6 +31,8 @@ enum
     BITMAPBTN_RUN,
     BITMAPBTN_STEP,
     BITMAPBTN_RESET,
+
+    BUTTON_COMPARE,
 };
 
 
@@ -91,9 +93,14 @@ private:
     void ShowResult();
 
 
-    GanttChart GetTurnAroundTime() const;
-    GanttChart  GetWaitingTime() const;
-    GanttChart GetResponseTime() const;
+    double GetTurnAroundTime() const;
+    double  GetWaitingTime() const;
+    double GetResponseTime() const;
+
+    std::vector<std::vector<double>> CalculateAverage();
+    bool InitCompare(int Algorithm);
+    void CmpPerformance(wxCommandEvent& event);
+    //void CmpPerformance();
 
     // Private variables
     wxString currentFilePath;

@@ -29,41 +29,6 @@ void CpuScheduler::StepForward()
 
 		// Preemptive
 		if (isPreemptive) {
-
-			/*currentProcess = wQ.Top();
-			wQ.Pop();
-			double delta;
-			double curBurstT = currentProcess.GetBurstTime();
-
-			if (wQ.GetAlgorithm() == Scheduling::SJF) {
-				while (!pQ->Empty()
-					&& pQ->Top().GetBurstTime() >= currentProcess.GetBurstTime()
-					&& pQ->Top().GetArrivalTime() - time <= curBurstT) {
-
-					wQ.Push(pQ->Top());
-					pQ->Pop();
-				}
-			}
-			else { //Priority
-				while (!pQ->Empty()
-					&& pQ->Top().GetPriority() >= currentProcess.GetPriority()
-					&& pQ->Top().GetArrivalTime() - time <= curBurstT) {
-
-					wQ.Push(pQ->Top());
-					pQ->Pop();
-				}
-			}
-
-			if (pQ->Empty() || pQ->Top().GetArrivalTime() - time > currentProcess.GetBurstTime()) {
-				delta = currentProcess.GetBurstTime();
-			}
-			else {
-				delta = pQ->Top().GetArrivalTime() - time;
-				wQ.Push(currentProcess - delta);
-			}
-
-			time += delta;*/
-
 			// Set currentProcess
 			if (currentProcess.GetBurstTime() <= 0) {
 
@@ -92,30 +57,39 @@ void CpuScheduler::StepForward()
 			}
 		}
 
-        // Round-Robin
-        else if (isRoundRobin) {
-			
+		// Round-Robin
+		else if (isRoundRobin) {
+
 			currentProcess = wQ.Top();
-			wQ.Pop();
+			if (currentProcess.GetBurstTime() > timeQuantum)
+			{
+				currentProcess.SetBurstTime(currentProcess.GetBurstTime() - timeQuantum);
+				time += timeQuantum;
+				wQ.Pop();
+				while (!pQ->Empty() && time >= pQ->Top().GetArrivalTime()) {
+					wQ.Push(pQ->Top());
+					pQ->Pop();
+				}
 
-            if (currentProcess.GetBurstTime() > timeQuantum) {
-
-                currentProcess -= timeQuantum;
-                time += timeQuantum;
 				wQ.Push(currentProcess);
-            }
+			}
 			else
-                time += currentProcess.GetBurstTime();
-        }
+			{
+				time += currentProcess.GetBurstTime();
+				currentProcess.SetBurstTime(0);
+				wQ.Pop();
+			}
+		}
 
-		// Non-preemptive and no time-quantum
 		else {
-
 			currentProcess = wQ.Top();
 			time += currentProcess.GetBurstTime();
 			wQ.Pop();
 		}
 	}
+
+    
+
 	// If waitingQueue is empty, empty process
 	else {
 

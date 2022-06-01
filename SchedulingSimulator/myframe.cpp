@@ -1,5 +1,7 @@
 ﻿#include "myframe.h"
 #include <set>
+#include <algorithm>
+#include "math.h"
 
 MyFrame::MyFrame()
     : wxFrame(NULL, wxID_ANY, _T("Scheduling Simulator")), _m_clntDC(this), blockSize(0), lowerWindowX(20), wqX(0), currentFilePath("")
@@ -78,6 +80,7 @@ MyFrame::MyFrame()
     new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_STEP, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
     new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
+    new wxButton(this, BUTTON_COMPARE, _T("Compare"), wxPoint(200 + (BUTTON_HEIGHT + 10) * 3, lowerWindowY + 5), btnSize);
 
 
     // File events
@@ -96,6 +99,8 @@ MyFrame::MyFrame()
     Bind(wxEVT_BUTTON, &MyFrame::RunScheduler, this, BITMAPBTN_RUN);
     Bind(wxEVT_BUTTON, &MyFrame::StepScheduler, this, BITMAPBTN_STEP);
     Bind(wxEVT_BUTTON, &MyFrame::ResetScheduler, this, BITMAPBTN_RESET);
+    Bind(wxEVT_BUTTON, &MyFrame::CmpPerformance, this, BUTTON_COMPARE);
+    
 
     // Main window event
     Bind(wxEVT_PAINT, &MyFrame::OnPaint, this);
@@ -277,6 +282,8 @@ void MyFrame::RunScheduler(wxCommandEvent& event)
     SetBaseX(wqX, wqEnd);
     Refresh();
     Update();
+
+    //CmpPerformance();
 
     ShowResult();
 }   
@@ -696,6 +703,7 @@ void MyFrame::ShowResult()
     std::list<std::pair<std::string, double>> gantt_copy(gantt);
     //make copy of gantt
     std::string temp;
+
     while (counter > 0)
     {
         for (int i = 0; i < counter2; i++)
@@ -727,13 +735,14 @@ void MyFrame::ShowResult()
     dialog->ShowModal();
 }
 ////////////////////////////////////////////////////////////////////////////
-GanttChart MyFrame::GetTurnAroundTime() const
+double MyFrame::GetTurnAroundTime() const
 {
     GanttChart TAList;
     GanttChart ganttChart = scheduler.GetGantthandler();
     std::set<std::string> s;
     GanttChart::const_reverse_iterator rit;
     int cnt;
+    double total=0;
     for (rit = ganttChart.rbegin(), cnt = 0; rit != ganttChart.rend(); rit++, cnt < pidList.size()) {
         if (s.find(rit->first) == s.end()) {
             s.insert(rit->first);
@@ -746,17 +755,20 @@ GanttChart MyFrame::GetTurnAroundTime() const
                 }
             }
             TAList.push_back(make_pair(rit->first, temp));
+            total += temp;
             cnt++;
         }
     }
 
-    return TAList;
+    //sort(TAList.begin(), TAList.end());
+    //return TAList;
+    return total / pidList.size();
 }
 
 
 
 
-GanttChart  MyFrame::GetWaitingTime() const
+double  MyFrame::GetWaitingTime() const
 {
 
     GanttChart WTList;
@@ -764,6 +776,7 @@ GanttChart  MyFrame::GetWaitingTime() const
     std::set<std::string> s;
     GanttChart::const_reverse_iterator rit;
     int cnt;
+    double total=0;
     for (rit = ganttChart.rbegin(), cnt = 0; rit != ganttChart.rend(); rit++, cnt < pidList.size()) {
         if (s.find(rit->first) == s.end()) {
             s.insert(rit->first);
@@ -778,15 +791,18 @@ GanttChart  MyFrame::GetWaitingTime() const
             }
 
             WTList.push_back(make_pair(rit->first, temp));
+            total += temp;
             cnt++;
         }
     }
 
-    return WTList;
+    //sort(WTList.begin(), WTList.end());
+    return total / pidList.size();
+    //return WTList;
 }
 
 
-GanttChart  MyFrame::GetResponseTime() const
+double  MyFrame::GetResponseTime() const
 {
 
     GanttChart RTList;
@@ -794,6 +810,7 @@ GanttChart  MyFrame::GetResponseTime() const
     std::set<std::string> s;
     GanttChart::const_iterator it;
     int cnt;
+    double total = 0;
     for (it = ganttChart.begin(), cnt = 0; it != ganttChart.end(); it++, cnt < pidList.size()) {
         if (s.find(it->first) == s.end()) {
             s.insert(it->first);
@@ -810,9 +827,178 @@ GanttChart  MyFrame::GetResponseTime() const
                 }
             }
             RTList.push_back(make_pair(it->first, temp));
+            total += temp;
             cnt++;
         }
     }
 
-    return RTList;
+    //sort(RTList.begin(), RTList.end());
+    return total / pidList.size();
+    //return RTList;
+}
+
+
+
+bool MyFrame::InitCompare(int Algorithm)
+{
+    // Set queue and parameter for scheduler
+    scheduler.SetProcessQueue(MakeProcessQueue());
+
+    // Check duplicate PID
+    for (int i = 0; i < pidList.size(); i++) {
+
+        if (pidList[i] == "") {
+
+            wxMessageBox("No empty Process ID allowed", "Test case error", wxICON_INFORMATION);
+            return false;
+        }
+        for (int j = i + 1; j < pidList.size(); j++) {
+
+            if (pidList[i] == pidList[j]) {
+
+                wxMessageBox("No duplicate Process ID allowed", "Test case error", wxICON_INFORMATION);
+                return false;
+            }
+        }
+    }
+
+    double tq;
+    textctrlTQ->GetValue().ToDouble(&tq);
+
+    switch (Algorithm) {
+
+    case 0://FCFS
+        scheduler.SetAlgorithm(Scheduling::FCFS, false, false);
+        break;
+
+    case 1://SJF
+        scheduler.SetAlgorithm(Scheduling::SJF, false, false);
+        break;
+
+    case 2://SRJF
+        scheduler.SetAlgorithm(Scheduling::SJF, true, false);
+        break;
+
+    case 3://RR
+        if (tq <= 0) {
+
+            wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
+            return false;
+        }
+        scheduler.SetAlgorithm(Scheduling::FCFS, false, true);
+        scheduler.SetTimeQuantum(tq);
+        break;
+
+    case 4://Non-preemptive Priority
+        scheduler.SetAlgorithm(Scheduling::Priority, false, false);
+        break;
+
+    case 5://Preemptive Priority
+        scheduler.SetAlgorithm(Scheduling::Priority, true, false);
+        break;
+
+    case 6://Non-preemptive Priority with RR
+        if (tq <= 0) {
+
+            wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
+            return false;
+        }
+        scheduler.SetAlgorithm(Scheduling::Priority, false, true);
+        scheduler.SetTimeQuantum(tq);
+        break;
+
+    default://Not selected
+        break;
+    }
+
+    AllocateColor();
+    return true;
+}
+
+//wxCommandEvent& event
+void MyFrame::CmpPerformance(wxCommandEvent& event)
+{
+    std::vector<double> v;
+    std::vector<std::vector<double>> resultVector(7, v);
+    wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
+    long style = wxALIGN_RIGHT | wxBORDER_SIMPLE;
+    wxDialog* dialog = new wxDialog;
+    dialog->Create(NULL, wxID_ANY,
+        "Compare Performance",
+        wxDefaultPosition,
+        wxSize(1200, 800),
+        wxDEFAULT_DIALOG_STYLE,
+        wxASCII_STR(wxDialogNameStr));
+
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+    wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(1000, 600));
+    grid->CreateGrid(7, 3);
+
+    grid->SetColLabelValue(0, "Average Waiting Time");
+    grid->SetColLabelValue(1, "Average Response Time");
+    grid->SetColLabelValue(2, "Average Turnaround Time");
+
+    grid->SetRowLabelValue(0, "FCFS");
+    grid->SetRowLabelValue(1, "SJF");
+    grid->SetRowLabelValue(2, "SRTF");
+    grid->SetRowLabelValue(3, "Round Robin");
+    grid->SetRowLabelValue(4, "Non-preemptive Priority");
+    grid->SetRowLabelValue(5, "Preemptive Priority");
+    grid->SetRowLabelValue(6, "Preemptive Priority with RR");
+
+    grid->SetRowLabelSize(200);
+    grid->SetColLabelSize(40);
+    for (int i = 0; i < 7; i++)
+    {
+        grid->SetRowSize(i, 40);
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        grid->SetColSize(i, 200);
+    }
+
+    // Main
+    double minWT = 1000, minTA = 1000, minRT = 1000;
+    for (int i = 0; i < 7; i++)
+    {
+        
+        if (!scheduler.IsRunning())
+            if (InitCompare(i))                
+                scheduler.StepForward();
+
+        while (scheduler.IsRunning())
+            scheduler.StepForward();
+
+        // Calculate
+        //GanttChart tempGantt = scheduler.GetGantthandler();
+        double AverageWaitingtime = GetWaitingTime();
+        double AverageResponsetime = GetResponseTime();
+        double AverageTurnaroundtime = GetTurnAroundTime();
+
+        resultVector[i].push_back(AverageWaitingtime);
+        resultVector[i].push_back(AverageResponsetime);
+        resultVector[i].push_back(AverageTurnaroundtime);
+
+        //minWT = (minWT > AverageWaitingtime ? AverageWaitingtime : minWT);
+        minWT = std::min(minWT, AverageWaitingtime);
+        minTA = std::min(minTA, AverageTurnaroundtime);
+        minRT = std::min(minRT, AverageResponsetime);
+    }
+    SetSizer(mainSizer);
+    SetMinSize(wxSize(700, 100));
+    std::vector<double> minVals = { minWT, minRT, minTA};
+
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j < 3; j++) {
+            grid->SetCellValue(i, j, std::to_string(round(resultVector[i][j] * 10) / 10));
+            if (resultVector[i][j] == minVals[j])
+                grid->SetCellBackgroundColour(i, j, *wxYELLOW);
+            }
+        }
+
+
+
+    dialog->ShowModal();
 }
