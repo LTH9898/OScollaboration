@@ -27,6 +27,7 @@ enum
     BUTTON_CLEAR,
     SCROLL_UPPER,
     SCROLL_LOWER,
+    
 
     BITMAPBTN_RUN,
     BITMAPBTN_STEP,
