@@ -11,7 +11,6 @@ void CpuScheduler::StepForward()
 
 		if (pQ->Empty() && wQ.Empty()) {
 
-
 			pQ = nullptr;
 			return;
 		}
