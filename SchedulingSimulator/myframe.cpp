@@ -648,7 +648,6 @@ void MyFrame::SetBaseX(int& baseX, int end)
 
 
 
-
 ////////////////////////////////////////////////////////////////////////
 void MyFrame::ShowResult()
 {
@@ -667,39 +666,153 @@ void MyFrame::ShowResult()
     wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(500, 300));
 
     grid->CreateGrid(pidList.size() + 1, 3);
-
+    
     grid->SetColLabelValue(0, "Waiting Time");
     grid->SetColLabelValue(1, "Response Time");
     grid->SetColLabelValue(2, "Turnaround Time");
     //Average Row name Change
     grid->SetRowLabelValue(pidList.size(), "Average");
     grid->SetRowSize(pidList.size(), 40);
+
+    auto& gantt = scheduler.GetGantthandler();
+
     for (int i = 0; i < pidList.size(); i++)
     {
-        grid->SetRowLabelValue(i, "P" + std::to_string(i + 1));
+        grid->SetRowLabelValue(i, pidList[i]);
         grid->SetRowSize(i, 40);
     }
 
-    grid->SetCellValue(0, 0, std::to_string(timeX[0]));
-
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
         grid->SetColSize(i, 200);
     }
+    
 
-    //grid->SetCellValue(0, 0, "wxGrid is good");
-    //grid->SetCellValue(0, 3, "This is read->only");
-    //grid->SetReadOnly(0, 3);
-    //// Colours can be specified for grid cell contents
-    //grid->SetCellValue(3, 3, "green on grey");
-    //grid->SetCellTextColour(3, 3, *wxGREEN);
-    //grid->SetCellBackgroundColour(3, 3, *wxLIGHT_GREY);
-    //// We can specify the some cells will store numeric
-    //// values rather than strings. Here we set grid column 5
-    //// to hold floating point values displayed with width of 6
-    //// and precision of 2
-    //grid->SetColFormatFloat(5, 6, 2);
-    //grid->SetCellValue(0, 6, "3.1415");
+   for (int i = 0; i < 3; i++)
+    {
+        grid->SetColSize(i, 200);
+    }
+    //Get the Turnaround Time
+    double AverageWaitingTime;
+    double AverageTurnaroundTime;
+    double AverageResponseTime;
+    std::vector<int> is_calculated(pidList.size());
+    std::vector<int> is_calculated_R(pidList.size());
+    int counter = pidList.size();
+    int counter2 = counter;
+    std::list<std::pair<std::string, double>> gantt_copy_R(gantt);
+    std::list<std::pair<std::string, double>> gantt_copy(gantt);
+    //make copy of gantt
+    std::string temp;
+    while (counter > 0)
+    {
+        for (int i = 0; i < counter2; i++)
+        {
+            if (gantt_copy.back().first == grid->GetRowLabelValue(i).ToStdString() && is_calculated[i] == 0)
+            {
+                grid->SetCellValue(i, 2, std::to_string(gantt_copy.back().second - arrivalTimeList[i]));
+                grid->SetCellValue(i, 0, std::to_string(gantt_copy.back().second - arrivalTimeList[i] - burstTimeList[i]));
+                is_calculated[i] = 1;
+                counter--;
+            }
+        }
+        gantt_copy.pop_back();
+    }
+
+    double TotalWaitingTime = 0 ;
+    double TotalTurnaroundTime = 0;
+    double TotalResponseTime = 0;
+
+    // Get the AverageTurnaround Time
+
+    for (int i = 0; i < counter2; i++)
+    {
+        double tempTA;
+        grid->GetCellValue(i, 2).ToDouble(&tempTA);
+        TotalTurnaroundTime += tempTA;
+    }
+
+    AverageTurnaroundTime = TotalTurnaroundTime / pidList.size();
+
+    grid->SetCellValue(counter2, 2, std::to_string(AverageTurnaroundTime));
+
+    //Get the AverageWatingTime
+
+    for (int i = 0; i < counter2; i++)
+    {
+        double tempWT;
+        grid->GetCellValue(i, 0).ToDouble(&tempWT);
+        TotalWaitingTime += tempWT;
+    }
+
+    AverageWaitingTime = TotalWaitingTime / pidList.size();
+
+    grid->SetCellValue(counter2, 0, std::to_string(AverageWaitingTime));
+
+    //Get the ResponseTime IN PROGRESS...
+
+    int counter_R = pidList.size();
+    int isFirst = 0;
+    int counter2R = counter_R;
+    double lastFinishedTime = 0;
+
+    
+    while (counter_R > 0)
+    {
+        for (int i = 0; i < counter2R; i++)
+        {
+            if (gantt_copy_R.front().first == grid->GetRowLabelValue(i).ToStdString()) // compare value with the rows, if find same ,do this
+            {
+                // if it is the first element of the ganttchart
+                if (isFirst == 0)
+                {
+                    grid->SetCellValue(i, 1, std::to_string(0));
+                    lastFinishedTime = gantt_copy_R.front().second;
+                    is_calculated_R[i] = 1;
+                    isFirst = 1;
+                    counter_R--;
+                    
+                }
+                 // it is calculated already
+                if (is_calculated_R[i] == 1) {
+                    lastFinishedTime = gantt_copy_R.front().second;
+                   
+                }
+                // it is not calculated..
+                if (is_calculated_R[i] == 0)
+                {
+                    grid->SetCellValue(i, 1, std::to_string(lastFinishedTime - arrivalTimeList[i]));
+                    lastFinishedTime = gantt_copy_R.front().second;
+                    
+                    is_calculated_R[i] = 1;
+                    counter_R--;
+                   
+                }
+                break;
+            }
+            
+           
+            // one loop checked         
+        }
+        //idle :  one loop elapsed but there is no same data with row
+        lastFinishedTime = gantt_copy_R.front().second;
+        gantt_copy_R.pop_front();
+    }
+
+    //Get the AverageResponseTime
+
+    for (int i = 0; i < counter2; i++)
+    {
+        double tempRT;
+        grid->GetCellValue(i, 1).ToDouble(&tempRT);
+        TotalResponseTime += tempRT;
+    }
+
+    AverageResponseTime = TotalResponseTime / pidList.size();
+
+    grid->SetCellValue(counter2, 1, std::to_string(AverageResponseTime));
+
+
 
     SetSizer(mainSizer);
     SetMinSize(wxSize(700, 100));
