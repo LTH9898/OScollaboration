@@ -24,7 +24,7 @@ public:
 	bool IsRunning() const
 		{ return isRunning; }
 
-	void StepForward();
+	void StepForward();	
 	void Reset();
 
 private:

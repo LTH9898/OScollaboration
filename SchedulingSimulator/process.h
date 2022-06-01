@@ -16,8 +16,8 @@ public:
 		: pid(rhs.pid), arrivalTime(rhs.arrivalTime), burstTime(rhs.burstTime), priority(rhs.priority) {}
 
 	void SetPid(const std::string& pid) { this->pid = pid; }
-	void SetArrivalTime(const double arrivalTime) { this->arrivalTime = arrivalTime; }
-	void SetBurstTime(const double burstTime) { this->burstTime = burstTime; }
+	void SetArrivalTime(double arrivalTime) { this->arrivalTime = arrivalTime; }
+	void SetBurstTime(double burstTime) { this->burstTime = burstTime; }
 	void SetPriority(const unsigned priority) { this->priority = priority; }
 
 	std::string GetPid() const { return pid; }
