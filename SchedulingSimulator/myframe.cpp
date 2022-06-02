@@ -369,7 +369,7 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     std::vector<double> burstTimeList;
 
     RemoveSpaceFromTextctrl();
-    if (IsTextctrlEmpty()) {
+    if (IsTextctrlEmpty() || IsTimeQuantumEmpty()) {
 
         wxMessageBox("No empty textctrl allowed", "Test case error", wxICON_INFORMATION);
         delete grid;
@@ -762,6 +762,11 @@ bool MyFrame::InitScheduler()
 
     if (index == 3 || index == 6) {
 
+        if (IsTimeQuantumEmpty()) {
+
+            wxMessageBox("No empty time quantum allowed", "Test case error", wxICON_INFORMATION);
+            return false;
+        }
         double tq;
         textctrlTQ->GetValue().ToDouble(&tq);
         if (tq <= 0) {
@@ -778,8 +783,6 @@ bool MyFrame::InitScheduler()
 
 bool MyFrame::IsTextctrlEmpty()
 {
-    if (textctrlTQ->GetValue() == "")
-        return true;
     for (auto elem : textctrls)
         if (elem->GetValue() == "")
             return true;

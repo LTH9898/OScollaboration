@@ -88,6 +88,8 @@ private:
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
     bool InitScheduler();
     bool IsTextctrlEmpty();
+    bool IsTimeQuantumEmpty()
+        { return textctrlTQ->GetValue() == "" ? true : false; }
 
     void InitColorTable();
     void AllocateColor();
