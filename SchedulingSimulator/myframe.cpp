@@ -218,7 +218,6 @@ void MyFrame::CreateProcessBlock(wxCommandEvent& event)
 {
     if (blockSize > MAX_PROCESS) {
 
-
         wxMessageBox(_T("Exceeding the maximum number of processes"));
         return;
     }
@@ -336,8 +335,6 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     wxDialog* dialog = new wxDialog(this, wxID_ANY, "Compare Performance",
         wxDefaultPosition, wxSize(1020, 360));
 
-    //wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-
     wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(1200, 800));
     grid->CreateGrid(7, 4);
 
@@ -372,6 +369,14 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     std::vector<double> burstTimeList;
 
     RemoveSpaceFromTextctrl();
+    if (IsTextctrlEmpty()) {
+
+        wxMessageBox("No empty textctrl allowed", "Test case error", wxICON_INFORMATION);
+        delete grid;
+        delete dialog;
+        return;
+    }
+
     for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
 
         std::string tempPid = textctrls[i]->GetValue().ToStdString();
@@ -396,13 +401,6 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     // Check duplicate PID
     for (int i = 0; i != pidList.size(); i++) {
 
-        if (pidList[i] == "") {
-
-            wxMessageBox("No empty Process ID allowed", "Test case error", wxICON_INFORMATION);
-            delete grid;
-            delete dialog;
-            return;
-        }
         for (int j = i + 1; j != pidList.size(); j++) {
 
             if (pidList[i] == pidList[j]) {
@@ -738,14 +736,15 @@ bool MyFrame::InitScheduler()
     // Set queue and parameter for scheduler
     scheduler.SetProcessQueue(MakeProcessQueue());
 
+    // check textctrl
+    if (IsTextctrlEmpty()) {
+
+        wxMessageBox("No empty textctrl allowed", "Test case error", wxICON_INFORMATION);
+        return false;
+    }
     // Check duplicate PID
     for (int i = 0; i != pidList.size(); i++) {
 
-        if (pidList[i] == "") {
-
-            wxMessageBox("No empty Process ID allowed", "Test case error", wxICON_INFORMATION);
-            return false;
-        }
         for (int j = i + 1; j != pidList.size(); j++) {
 
             if (pidList[i] == pidList[j]) {
@@ -776,6 +775,19 @@ bool MyFrame::InitScheduler()
     AllocateColor();
     return true;
 }
+
+bool MyFrame::IsTextctrlEmpty()
+{
+    if (textctrlTQ->GetValue() == "")
+        return true;
+    for (auto elem : textctrls)
+        if (elem->GetValue() == "")
+            return true;
+    return false;
+}
+
+
+
 
 void MyFrame::InitColorTable()
 {
