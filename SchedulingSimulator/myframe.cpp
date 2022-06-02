@@ -166,18 +166,19 @@ void MyFrame::OnSave(wxCommandEvent& event)
         return;
     }
 
-    std::ofstream ofs(currentFilePath.utf8_string());
+    std::ofstream ofs(currentFilePath.ToStdString());
     if (!ofs.is_open()) {
 
         wxLogError("Cannot save file '%s'.", currentFilePath);
         return;
     }
 
-
-    ofs << textctrlTQ->GetValue().utf8_string() + ";" << std::endl;
+    // Write
+    RemoveSpaceFromTextctrl();
+    ofs << textctrlTQ->GetValue().ToStdString() + ";" << std::endl;
     ofs << blockSize << ";" << std::endl;
     for (auto elem : textctrls)
-        ofs << elem->GetValue().utf8_string() + ";" << std::endl;
+        ofs << elem->GetValue().ToStdString() + ";" << std::endl;
 
     ofs.close();
 }
@@ -189,18 +190,22 @@ void MyFrame::_OnSaveAs()
     if (saveFileDialog.ShowModal() == wxID_CANCEL)
         return;
 
-    std::ofstream ofs(saveFileDialog.GetPath().utf8_string());
+    std::ofstream ofs(saveFileDialog.GetPath().ToStdString());
     if (!ofs.is_open()) {
 
         wxLogError("Cannot save file '%s'.", saveFileDialog.GetPath());
         return;
     }
 
-
-    ofs << textctrlTQ->GetValue().utf8_string() + ";" << std::endl;
+    // Write
+    RemoveSpaceFromTextctrl();
+    ofs << textctrlTQ->GetValue().ToStdString() + ";" << std::endl;
     ofs << blockSize << ";" << std::endl;
-    for (auto elem : textctrls)
-        ofs << elem->GetValue().utf8_string() + ";" << std::endl;
+    for (auto elem : textctrls) {
+
+        std::string str = elem->GetValue().ToStdString();
+        ofs << elem->GetValue().ToStdString() + ";" << std::endl;
+    }
 
     currentFilePath = saveFileDialog.GetPath();
     ofs.close();
@@ -262,14 +267,31 @@ void MyFrame::_ClearProcessBlock()
     Update();
 }
 
+void MyFrame::RemoveSpaceFromTextctrl()
+{
+    std::string str = textctrlTQ->GetValue().ToStdString();
+    str.erase(remove(str.begin(), str.end(), ' '), str.end());
+    textctrlTQ->SetValue(str);
+
+    for (auto elem : textctrls) {
+
+        str = elem->GetValue().ToStdString();
+        str.erase(remove(str.begin(), str.end(), ' '), str.end());
+        elem->SetValue(str);
+    }
+}
+
 
 
 
 void MyFrame::RunScheduler(wxCommandEvent& event)
 {
-    if (!scheduler.IsRunning())
-        if (InitScheduler())
-            scheduler.StepForward();
+    if (!scheduler.IsRunning()) {
+
+        if (!InitScheduler())
+            return;
+        scheduler.StepForward();
+    }
 
     while (scheduler.IsRunning())
         scheduler.StepForward();
@@ -279,6 +301,7 @@ void MyFrame::RunScheduler(wxCommandEvent& event)
     SetBaseX(wqX, wqEnd);
     Refresh();
     Update();
+    SetStatusText("");
 
     ShowResult();
 }   
@@ -295,11 +318,15 @@ void MyFrame::StepScheduler(wxCommandEvent& event)
     lowerWindowX += GetClientSize().GetWidth() - chartEnd - 40;
     SetBaseX(lowerWindowX, chartEnd);
     SetBaseX(wqX, wqEnd);
+    SetStatusToProcess(scheduler.GetCurrentProcess());
     Refresh();
     Update();
 
-    if (!scheduler.IsRunning())
+    if (!scheduler.IsRunning()) {
+
+        SetStatusText("");
         ShowResult();
+    }
 }
 
 /////////////////////////////////////////////////
@@ -338,12 +365,13 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     // Scheduler
     CpuScheduler sche;
 
-    // Make process queue
+    // Create process queue
     ProcessQueue pQ;
     std::vector<std::string> pidList;
     std::vector<double> arrivalTimeList;
     std::vector<double> burstTimeList;
 
+    RemoveSpaceFromTextctrl();
     for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
 
         std::string tempPid = textctrls[i]->GetValue().ToStdString();
@@ -363,6 +391,28 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
         pidList.push_back(tempPid);
         arrivalTimeList.push_back(tempArrivaltime);
         burstTimeList.push_back(tempBursttime);
+    }
+
+    // Check duplicate PID
+    for (int i = 0; i != pidList.size(); i++) {
+
+        if (pidList[i] == "") {
+
+            wxMessageBox("No empty Process ID allowed", "Test case error", wxICON_INFORMATION);
+            delete grid;
+            delete dialog;
+            return;
+        }
+        for (int j = i + 1; j != pidList.size(); j++) {
+
+            if (pidList[i] == pidList[j]) {
+
+                wxMessageBox("No duplicate Process ID allowed", "Test case error", wxICON_INFORMATION);
+                delete grid;
+                delete dialog;
+                return;
+            }
+        }
     }
     // Check time quantum
     double tq;
@@ -524,7 +574,7 @@ void MyFrame::OnPaint(wxPaintEvent& event)
         // Draw waiting queue
         dc.DrawText("Waiting queue", 20, wqY + 15);
         i = 0;
-        x = wqX + 20;
+        x = wqX;
         y = wqY + 35;
         
         for (auto& elem : scheduler.GetWQhandler().GetWaitingQueue()) {
@@ -539,7 +589,6 @@ void MyFrame::OnPaint(wxPaintEvent& event)
             dc.DrawText(pid, x + CHART_HEIGHT * i + space, y + 11);
             i++;
         }
-        wqEnd = CHART_HEIGHT * i;
 
         dc.SetPen(*wxTRANSPARENT_PEN);
         dc.SetBrush(GetBackgroundColour());
@@ -562,6 +611,23 @@ void MyFrame::OnWindowSize(wxSizeEvent& event)
 
 void MyFrame::OnMotion(wxMouseEvent& event) {
 
+    // Display process information
+    if (scheduler.IsRunning()) {
+
+        wxPoint currentPos = event.GetLogicalPosition(_m_clntDC);
+
+        // display waiting queue element
+        auto& wQ = scheduler.GetWQhandler().GetWaitingQueue();
+        int relativeX = currentPos.x - wqX;
+        if (!wQ.empty() && wqY + 35 <= currentPos.y && currentPos.y <= wqY + 35 + CHART_HEIGHT
+            && 0 <= relativeX && relativeX < wqEnd)
+            SetStatusToProcess(wQ[relativeX / CHART_HEIGHT]);
+        // by default, display current process
+        else
+            SetStatusToProcess(scheduler.GetCurrentProcess());
+    }
+
+    // Scroll
     if (event.Dragging()) {
 
         wxPoint currentPos = event.GetLogicalPosition(_m_clntDC);
@@ -643,6 +709,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
     arrivalTimeList.clear();
     burstTimeList.clear();
  
+    RemoveSpaceFromTextctrl();
     for (auto i = 0; i + 3 < 4 * blockSize; i = i + 4) {
 
         std::string tempPid = textctrls[i]->GetValue().ToStdString();
@@ -654,7 +721,7 @@ std::unique_ptr<ProcessQueue> MyFrame::MakeProcessQueue()
         textctrls[i + 3]->GetValue().ToUInt(&tempPriority);
 
         tempArrivaltime = tempArrivaltime < 0 ? 0 : tempArrivaltime;
-        textctrls[i + 1]->SetValue(wxString::FromDouble(tempArrivaltime));  
+        textctrls[i + 1]->SetValue(wxString::FromDouble(tempArrivaltime));
         tempBursttime = tempBursttime < 0 ? 0 : tempBursttime;
         textctrls[i + 2]->SetValue(wxString::FromDouble(tempBursttime));
 
@@ -779,6 +846,8 @@ void MyFrame::SetChartArea()
         prevX = newX;
     }
     chartEnd = prevX;
+    // Set waiting queue area
+    wqEnd = CHART_HEIGHT * scheduler.GetWQhandler().Size();
 }
 
 void MyFrame::SetBaseX(int& baseX, int end)
@@ -794,6 +863,21 @@ void MyFrame::SetBaseX(int& baseX, int end)
             baseX = width - end - 20;
     }
 }
+
+void MyFrame::SetStatusToProcess(const Process& process)
+{
+    std::string text;
+    if (process.GetPid() == "")
+        text = " IDLE";
+    else {
+
+        text += " PID= " + process.GetPid() + " ;   ";
+        text += "Remaining_time= " + std::to_string(process.GetBurstTime()) + " ;   "
+            + "Priority= " + std::to_string(process.GetPriority());
+    }
+    SetStatusText(text);
+}
+
 
 
 
