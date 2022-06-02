@@ -370,6 +370,8 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     if (tq <= 0) {
 
         wxMessageBox("Time quantum must be more than 0", "Test case error", wxICON_INFORMATION);
+        delete grid;
+        delete dialog;
         return;
     }
     sche.SetTimeQuantum(tq);
@@ -472,6 +474,7 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
 
     // Show dialog
     dialog->ShowModal();
+    delete grid;
     delete dialog;
 }
 /////////////////////////////////////////////////
@@ -881,6 +884,7 @@ void MyFrame::ShowResult()
 
 
     dialog->ShowModal();
+    delete grid;
     delete dialog;
 }
 ////////////////////////////////////////////////////////////////////////////

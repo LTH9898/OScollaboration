@@ -82,6 +82,7 @@ void CpuScheduler::StepForward()
 
 			currentProcess = wQ.Top();
 			time += currentProcess.GetBurstTime();
+			currentProcess.SetBurstTime(0);
 			wQ.Pop();
 		}
 	}
