@@ -87,6 +87,8 @@ private:
     // Lower window functions
     std::unique_ptr<ProcessQueue> MakeProcessQueue();
     bool InitScheduler();
+    bool IsTextctrlEmpty();
+
     void InitColorTable();
     void AllocateColor();
     void SetChartArea();
