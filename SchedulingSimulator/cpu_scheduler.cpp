@@ -24,7 +24,7 @@ void CpuScheduler::StepForward()
 
 
 	// Dispatch process from waitingQueue to CPU
-	if (!wQ.Empty() || isRoundRobin && currentProcess.GetBurstTime() > 0) {
+	if (!wQ.Empty() || currentProcess.GetBurstTime() > 0) {
 
 		// Preemptive
 		if (isPreemptive) {
@@ -82,6 +82,7 @@ void CpuScheduler::StepForward()
 
 			currentProcess = wQ.Top();
 			time += currentProcess.GetBurstTime();
+			currentProcess.SetBurstTime(0);
 			wQ.Pop();
 		}
 	}
@@ -114,8 +115,7 @@ void CpuScheduler::StepForward()
 	}
 
 
-	if (pQ->Empty() && wQ.Empty() &&
-		(!isRoundRobin || isRoundRobin && currentProcess.GetBurstTime() <= 0)) {
+	if (pQ->Empty() && wQ.Empty() && currentProcess.GetBurstTime() <= 0) {
 
 		isRunning = false;
 		pQ = nullptr;

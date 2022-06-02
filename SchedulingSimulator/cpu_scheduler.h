@@ -19,6 +19,8 @@ public:
 		{ return wQ; }
 	const GanttChart& GetGantthandler() const
 		{ return ganttChart; }
+	Process GetCurrentProcess() const
+		{ return currentProcess; }
 	bool Empty() const
 		{ return ganttChart.empty(); }
 	bool IsRunning() const

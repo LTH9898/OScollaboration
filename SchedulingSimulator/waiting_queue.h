@@ -26,6 +26,8 @@ public:
 
 	const Process& Top() const
 		{ return data.front(); }
+	size_t Size() const
+		{ return data.size(); }
 	bool Empty() const
 		{ return data.empty(); }
 	void Clear()

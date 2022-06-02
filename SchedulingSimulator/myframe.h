@@ -61,11 +61,13 @@ private:
         void _ClearProcessBlock();
     void OnUpperScroll(wxScrollEvent& event)
         { ScrollUpperWindow(); Refresh(); Update(); }
+    void RemoveSpaceFromTextctrl();
+
     // Lower window events
     void RunScheduler(wxCommandEvent& event);
     void StepScheduler(wxCommandEvent& event);
     void ResetScheduler(wxCommandEvent& event)
-        { scheduler.Reset(); Refresh(); Update(); }
+        { scheduler.Reset(); Refresh(); Update(); SetStatusText(""); }
     void CmpPerformance(wxCommandEvent& event);
 
     // Main window event
@@ -89,6 +91,7 @@ private:
     void AllocateColor();
     void SetChartArea();
     void SetBaseX(int& baseX, int end);
+    void SetStatusToProcess(const Process& process);
     // Result
     void ShowResult();
 
