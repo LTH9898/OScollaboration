@@ -60,11 +60,11 @@ MyFrame::MyFrame()
         _T("Round Robin"),
         _T("Non-preemptive Priority"),
         _T("Preemptive Priority"),
-        _T("Preemptive Priority with RR")
+        _T("Non-preemptive Priority with RR")
     };
 
     choiceAlgorithms = new wxChoice(this, wxID_ANY, wxPoint(5, lowerWindowY + 6),
-        wxSize(180, 30), SIZEOF_ALGORITHMS, algorithms);
+        wxSize(210, 30), SIZEOF_ALGORITHMS, algorithms);
     choiceAlgorithms->SetSelection(0);
     
     auto path = wxStandardPaths::Get().GetDataDir();
@@ -75,10 +75,10 @@ MyFrame::MyFrame()
     imgPlay.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
     imgNext.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
     imgStop.Rescale(BUTTON_HEIGHT - 4, BUTTON_HEIGHT - 4, wxIMAGE_QUALITY_HIGH);
-    new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(200, lowerWindowY + 5), bitmapBtnSize);
-    new wxBitmapButton(this, BITMAPBTN_STEP, imgNext, wxPoint(200 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
-    new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(200 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
-    new wxButton(this, BUTTON_COMPARE, "Compare", wxPoint(200 + (BUTTON_HEIGHT + 10) * 3 + 20, lowerWindowY + 5), btnSize);
+    new wxBitmapButton(this, BITMAPBTN_RUN, imgPlay, wxPoint(230, lowerWindowY + 5), bitmapBtnSize);
+    new wxBitmapButton(this, BITMAPBTN_STEP, imgNext, wxPoint(230 + BUTTON_HEIGHT + 10, lowerWindowY + 5), bitmapBtnSize);
+    new wxBitmapButton(this, BITMAPBTN_RESET, imgStop, wxPoint(230 + (BUTTON_HEIGHT + 10) * 2, lowerWindowY + 5), bitmapBtnSize);
+    new wxButton(this, BUTTON_COMPARE, "Compare", wxPoint(230 + (BUTTON_HEIGHT + 10) * 3 + 40, lowerWindowY + 5), btnSize);
 
 
     // File events
