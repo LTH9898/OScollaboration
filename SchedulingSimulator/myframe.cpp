@@ -501,9 +501,10 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
         cellTable[1].push_back(AverageResponseTime);
         cellTable[2].push_back(AverageTurnaroundTime);
         cellTable[3].push_back(longest);
-        grid->SetCellValue(idx, 2, std::to_string(AverageTurnaroundTime));
+        
         grid->SetCellValue(idx, 0, std::to_string(AverageWaitingTime));
         grid->SetCellValue(idx, 1, std::to_string(AverageResponseTime));
+        grid->SetCellValue(idx, 2, std::to_string(AverageTurnaroundTime));
         grid->SetCellValue(idx, 3, std::to_string(longest));
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -907,8 +908,8 @@ void MyFrame::ShowResult()
 
     grid->CreateGrid(pidList.size() + 1, 3);
     grid->SetColLabelValue(0, "Waiting Time");
-    grid->SetColLabelValue(1, "Response Time");
-    grid->SetColLabelValue(2, "Turnaround Time");
+    grid->SetColLabelValue(1, "Turnaround Time");
+    grid->SetColLabelValue(2, "Response Time");
     //Average Row name Change
     grid->SetRowLabelValue(pidList.size(), "Average");
     grid->SetRowSize(pidList.size(), 40);
@@ -935,7 +936,7 @@ void MyFrame::ShowResult()
 
             if (iter->first == pidList[i]) {
 
-                grid->SetCellValue(i, 2, std::to_string(iter->second - arrivalTimeList[i]));
+                grid->SetCellValue(i, 1, std::to_string(iter->second - arrivalTimeList[i]));
                 grid->SetCellValue(i, 0, std::to_string(iter->second - arrivalTimeList[i] - burstTimeList[i]));
                 break;
             }
@@ -951,7 +952,7 @@ void MyFrame::ShowResult()
             
             if (iter->first == pidList[i]) { // compare value with the rows, if find same ,do this
 
-                grid->SetCellValue(i, 1, std::to_string(lastFinishedTime - arrivalTimeList[i]));
+                grid->SetCellValue(i, 2, std::to_string(lastFinishedTime - arrivalTimeList[i]));
                 break;
             }
             //idle :  one loop elapsed but there is no same data with row
@@ -963,11 +964,11 @@ void MyFrame::ShowResult()
     for (int i = 0; i != size; i++) {
 
         double temp;
-        grid->GetCellValue(i, 2).ToDouble(&temp);
+        grid->GetCellValue(i, 1).ToDouble(&temp);
         AverageTurnaroundTime += temp;
         grid->GetCellValue(i, 0).ToDouble(&temp);
         AverageWaitingTime += temp;
-        grid->GetCellValue(i, 1).ToDouble(&temp);
+        grid->GetCellValue(i, 2).ToDouble(&temp);
         AverageResponseTime += temp;
     }
 
@@ -977,9 +978,9 @@ void MyFrame::ShowResult()
         AverageWaitingTime /= size;
         AverageResponseTime /= size;
     }
-    grid->SetCellValue(size, 2, std::to_string(AverageTurnaroundTime));
+    grid->SetCellValue(size, 2, std::to_string(AverageResponseTime));
     grid->SetCellValue(size, 0, std::to_string(AverageWaitingTime));
-    grid->SetCellValue(size, 1, std::to_string(AverageResponseTime));
+    grid->SetCellValue(size, 1, std::to_string(AverageTurnaroundTime));
 
 
     dialog->ShowModal();
