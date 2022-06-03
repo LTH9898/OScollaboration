@@ -333,7 +333,7 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
 {
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
     wxDialog* dialog = new wxDialog(this, wxID_ANY, "Compare Performance",
-        wxDefaultPosition, wxSize(1020, 360));
+        GetScreenPosition() + wxPoint(GetClientSize().GetWidth(), 0), wxSize(1020, 360));
 
     wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(1200, 800));
     grid->CreateGrid(7, 4);
@@ -900,7 +900,8 @@ void MyFrame::SetStatusToProcess(const Process& process)
 void MyFrame::ShowResult()
 {
     wxSize textSize = wxSize(TEXT_WIDTH, TEXT_HEIGHT);
-    wxDialog* dialog = new wxDialog(this, wxID_ANY, "Result", wxDefaultPosition, wxSize(720, 440));
+    wxDialog* dialog = new wxDialog(this, wxID_ANY, "Result",
+        GetScreenPosition() + wxPoint(GetClientSize().GetWidth(), 0), wxSize(720, 440));
 
     //wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
     wxGrid* grid = new wxGrid(dialog, -1, wxPoint(0, 0), wxSize(500, 300));
