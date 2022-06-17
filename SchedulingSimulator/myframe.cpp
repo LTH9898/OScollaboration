@@ -49,7 +49,7 @@ MyFrame::MyFrame()
     // schedular 
     // Lower window
     lowerWindowY = upperScroll->GetPosition().y + upperScroll->GetSize().GetHeight();
-    wqY = lowerWindowY + 70 + CHART_HEIGHT + 35;
+    wqY = lowerWindowY + 70 + CHART_HEIGHT + BAR_SIZE;
 
     // Schedular choice
     wxString algorithms[SIZEOF_ALGORITHMS] =
@@ -349,7 +349,7 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     grid->SetRowLabelValue(3, "Round Robin");
     grid->SetRowLabelValue(4, "Non-preemptive Priority");
     grid->SetRowLabelValue(5, "Preemptive Priority");
-    grid->SetRowLabelValue(6, "Preemptive Priority with RR");
+    grid->SetRowLabelValue(6, "Non-Preemptive Priority with RR");
 
     grid->SetRowLabelSize(200);
     grid->SetColLabelSize(40);
@@ -367,9 +367,9 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     std::vector<std::string> pidList;
     std::vector<double> arrivalTimeList;
     std::vector<double> burstTimeList;
-
+    
     RemoveSpaceFromTextctrl();
-    if (IsTextctrlEmpty() || IsTimeQuantumEmpty()) {
+    if (IsTextctrlEmpty() || IsTimeQuantumEmpty() || textctrls.empty()) {
 
         wxMessageBox("No empty textctrl allowed", "Test case error", wxICON_INFORMATION);
         delete grid;
@@ -574,7 +574,7 @@ void MyFrame::OnPaint(wxPaintEvent& event)
         dc.DrawText("Waiting queue", 20, wqY + 15);
         i = 0;
         x = wqX;
-        y = wqY + 35;
+        y = wqY + BAR_SIZE;
         
         for (auto& elem : scheduler.GetWQhandler().GetWaitingQueue()) {
 
@@ -618,7 +618,7 @@ void MyFrame::OnMotion(wxMouseEvent& event) {
         // display waiting queue element
         auto& wQ = scheduler.GetWQhandler().GetWaitingQueue();
         int relativeX = currentPos.x - wqX;
-        if (!wQ.empty() && wqY + 35 <= currentPos.y && currentPos.y <= wqY + 35 + CHART_HEIGHT
+        if (!wQ.empty() && wqY + BAR_SIZE <= currentPos.y && currentPos.y <= wqY + BAR_SIZE + CHART_HEIGHT
             && 0 <= relativeX && relativeX < wqEnd)
             SetStatusToProcess(wQ[relativeX / CHART_HEIGHT]);
         // by default, display current process
@@ -634,7 +634,7 @@ void MyFrame::OnMotion(wxMouseEvent& event) {
         previousPos = currentPos;
 
         // Gantt chart dragging event
-        if (lowerWindowY + 35 < currentPos.y && currentPos.y < wqY) {
+        if (lowerWindowY + BAR_SIZE < currentPos.y && currentPos.y < wqY) {
 
             lowerWindowX += direction;
             SetBaseX(lowerWindowX, chartEnd);
