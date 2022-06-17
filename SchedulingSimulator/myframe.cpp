@@ -339,8 +339,8 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
     grid->CreateGrid(7, 4);
 
     grid->SetColLabelValue(0, "Average Waiting Time");
-    grid->SetColLabelValue(1, "Average Response Time");
-    grid->SetColLabelValue(2, "Average Turnaround Time");
+    grid->SetColLabelValue(1, "Average Turnaround Time");
+    grid->SetColLabelValue(2, "Average Response Time");
     grid->SetColLabelValue(3, "Longest Turnaround Time");
 
     grid->SetRowLabelValue(0, "FCFS");
@@ -498,13 +498,13 @@ void MyFrame::CmpPerformance(wxCommandEvent& event)
         }
 
         cellTable[0].push_back(AverageWaitingTime);
-        cellTable[1].push_back(AverageResponseTime);
-        cellTable[2].push_back(AverageTurnaroundTime);
+        cellTable[1].push_back(AverageTurnaroundTime);
+        cellTable[2].push_back(AverageResponseTime);
         cellTable[3].push_back(longest);
         
         grid->SetCellValue(idx, 0, std::to_string(AverageWaitingTime));
-        grid->SetCellValue(idx, 1, std::to_string(AverageResponseTime));
-        grid->SetCellValue(idx, 2, std::to_string(AverageTurnaroundTime));
+        grid->SetCellValue(idx, 1, std::to_string(AverageTurnaroundTime));
+        grid->SetCellValue(idx, 2, std::to_string(AverageResponseTime));
         grid->SetCellValue(idx, 3, std::to_string(longest));
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////
